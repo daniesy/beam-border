@@ -4,7 +4,7 @@
     "name": "Dan Florian",
     "email": "hello@danutflorian.com"
   },
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Vue 3 port of border-beam animated border glow effect",
   "type": "module",
   "main": "dist/index.cjs",
