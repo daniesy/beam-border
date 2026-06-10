@@ -249,16 +249,16 @@ npm run dev
 
 ## Publishing to npm with GitHub Actions
 
-This repo includes `.github/workflows/publish.yml`. It uses GitHub Actions and npm directly, with no paid third-party publishing service.
+This repo includes `.github/workflows/publish.yml`. It uses GitHub Actions and npm Trusted Publishing, with no paid third-party publishing service and no long-lived npm publish token.
 
 To publish:
 
-1. Create an npm automation token.
-2. Add it to your GitHub repository secrets as `NPM_TOKEN`.
+1. In npm, configure Trusted Publishing for this package.
+2. Set the trusted publisher to this GitHub repository and the `publish.yml` workflow filename.
 3. Make sure `package.json` has the package name and version you want to publish.
 4. Publish a GitHub release, or run the workflow manually from the Actions tab.
 
-The workflow runs `npm ci`, `npm run typecheck`, `npm run test`, `npm run build`, then `npm publish --access public --provenance`.
+The workflow runs `npm ci`, `npm run typecheck`, `npm run test`, `npm run build`, then `npm publish --access public`. npm automatically generates provenance when publishing from GitHub Actions through Trusted Publishing.
 
 ## Attribution
 
