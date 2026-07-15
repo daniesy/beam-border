@@ -301,9 +301,9 @@ function tintColor(tint: string | undefined, opacity = 1): string | undefined {
   return `color-mix(in srgb, ${tint} ${+(opacity * 100).toFixed(2)}%, transparent)`;
 }
 
-function tintColorVar(tint: string | undefined, quad: PulseQuad, id: string): string | undefined {
+function tintColorVar(tint: string | undefined, quad: PulseQuad): string | undefined {
   if (!tint) return undefined;
-  return `color-mix(in srgb, ${tint} calc(var(--bop-${quad}-${id}) * 100%), transparent)`;
+  return `color-mix(in srgb, ${tint} calc(var(--beam-bop-${quad}) * 100%), transparent)`;
 }
 
 function getSmallColorGradients(colorVariant: BorderBeamColorVariant, tint?: string): string {
@@ -447,13 +447,13 @@ const lineColorPalettes = {
   },
 };
 
-function getLineColorGradients(colorVariant: BorderBeamColorVariant, isDark: boolean, id: string, tint?: string): string {
+function getLineColorGradients(colorVariant: BorderBeamColorVariant, isDark: boolean, tint?: string): string {
   const palette = lineColorPalettes[colorVariant][isDark ? 'dark' : 'light'];
   return palette
     .map(c => {
       const offsetXStr = c.offsetX === 0 ? '' : (c.offsetX > 0 ? ` + ${c.offsetX}px` : ` - ${Math.abs(c.offsetX)}px`);
       const offsetYStr = c.offsetY === 0 ? '' : (c.offsetY > 0 ? ` + ${c.offsetY}px` : ` - ${Math.abs(c.offsetY)}px`);
-      return `radial-gradient(ellipse calc(${c.sizeW}px * var(--beam-w-${id})) calc(${c.sizeH}px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%${offsetXStr}) calc(100%${offsetYStr}), ${tintColor(tint) ?? c.color}, transparent)`;
+      return `radial-gradient(ellipse calc(${c.sizeW}px * var(--beam-w)) calc(${c.sizeH}px * var(--beam-h)) at calc(var(--beam-x) * 100%${offsetXStr}) calc(100%${offsetYStr}), ${tintColor(tint) ?? c.color}, transparent)`;
     })
     .join(',\n       ');
 }
@@ -506,13 +506,13 @@ const lineInnerGradientData = {
   ],
 };
 
-function getLineInnerGradients(colorVariant: BorderBeamColorVariant, id: string, tint?: string): string {
+function getLineInnerGradients(colorVariant: BorderBeamColorVariant, tint?: string): string {
   const data = lineInnerGradientData[colorVariant];
   return data
     .map(c => {
       const offsetXStr = c.offsetX === 0 ? '' : (c.offsetX > 0 ? ` + ${c.offsetX}px` : ` - ${Math.abs(c.offsetX)}px`);
       const offsetYStr = c.offsetY === 0 ? '' : ` - ${Math.abs(c.offsetY)}px`;
-      return `radial-gradient(ellipse calc(${c.sizeW}px * var(--beam-w-${id})) calc(${c.sizeH}px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%${offsetXStr}) calc(100%${offsetYStr}), ${tintColor(tint, 0.48) ?? c.color}, transparent)`;
+      return `radial-gradient(ellipse calc(${c.sizeW}px * var(--beam-w)) calc(${c.sizeH}px * var(--beam-h)) at calc(var(--beam-x) * 100%${offsetXStr}) calc(100%${offsetYStr}), ${tintColor(tint, 0.48) ?? c.color}, transparent)`;
     })
     .join(',\n    ');
 }
@@ -616,17 +616,17 @@ function attenuateSpike(color: string, factor: number): string {
   return color;
 }
 
-function getLineBloomGradients(colorVariant: BorderBeamColorVariant, isDark: boolean, id: string, tint?: string): string {
+function getLineBloomGradients(colorVariant: BorderBeamColorVariant, isDark: boolean, tint?: string): string {
   if (tint) {
     const glow = tintColor(tint, isDark ? 0.95 : 0.7);
     const mid = tintColor(tint, isDark ? 0.5 : 0.35);
     const soft = tintColor(tint, isDark ? 0.2 : 0.16);
 
-    return `radial-gradient(ellipse calc(12px * var(--beam-spike-${id})) calc(78px * var(--beam-h-${id})) at 12% calc(100% - 2px), ${glow}, ${mid} 35%, transparent 90%),
-       radial-gradient(ellipse calc(16px * var(--beam-spike2-${id})) calc(56px * var(--beam-h-${id})) at 32% calc(100% - 3px), ${mid}, ${soft} 55%, transparent 96%),
-       radial-gradient(ellipse calc(18px * (2 - var(--beam-spike-${id}))) calc(68px * var(--beam-h-${id})) at 58% calc(100% - 3px), ${glow}, ${mid} 40%, transparent 92%),
-       radial-gradient(ellipse calc(10px * (2 - var(--beam-spike2-${id}))) calc(52px * var(--beam-h-${id})) at 84% calc(100% - 3px), ${mid}, ${soft} 45%, transparent 92%),
-       radial-gradient(ellipse calc(48px * var(--beam-w-${id})) calc(42px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%, ${soft} 0%, transparent 82%)`;
+    return `radial-gradient(ellipse calc(12px * var(--beam-spike)) calc(78px * var(--beam-h)) at 12% calc(100% - 2px), ${glow}, ${mid} 35%, transparent 90%),
+       radial-gradient(ellipse calc(16px * var(--beam-spike2)) calc(56px * var(--beam-h)) at 32% calc(100% - 3px), ${mid}, ${soft} 55%, transparent 96%),
+       radial-gradient(ellipse calc(18px * (2 - var(--beam-spike))) calc(68px * var(--beam-h)) at 58% calc(100% - 3px), ${glow}, ${mid} 40%, transparent 92%),
+       radial-gradient(ellipse calc(10px * (2 - var(--beam-spike2))) calc(52px * var(--beam-h)) at 84% calc(100% - 3px), ${mid}, ${soft} 45%, transparent 92%),
+       radial-gradient(ellipse calc(48px * var(--beam-w)) calc(42px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%, ${soft} 0%, transparent 82%)`;
   }
 
   const spikeColors = getSpikeColors(colorVariant, isDark);
@@ -666,26 +666,26 @@ function getLineBloomGradients(colorVariant: BorderBeamColorVariant, isDark: boo
   const glowAmb55  = isMono ? 'rgba(255, 255, 255, 0.015)': 'rgba(255, 255, 255, 0.03)';
 
   if (isDark) {
-    return `radial-gradient(ellipse calc(${thinW1} * var(--beam-spike-${id})) calc(${thinH1} * var(--beam-h-${id})) at 8% calc(100% - 2px), ${sc1}, ${sc1_mid} 30%, transparent 88%),
-       radial-gradient(ellipse calc(10px * var(--beam-spike2-${id})) calc(35px * var(--beam-h-${id})) at 22% calc(100% - 4px), ${sc2}, ${sc2_mid} 50%, transparent 95%),
-       radial-gradient(ellipse calc(${thinW2} * (2 - var(--beam-spike-${id}))) calc(${thinH2} * var(--beam-h-${id})) at 36% calc(100% - 3px), ${spikes[0].color1}, ${spikes[0].color2} 40%, transparent 90%),
-       radial-gradient(ellipse calc(14px * var(--beam-spike2-${id})) calc(28px * var(--beam-h-${id})) at 50% calc(100% - 2px), ${spikes[1].color1}, ${spikes[1].color2} 55%, transparent 96%),
-       radial-gradient(ellipse calc(${thinW3} * (2 - var(--beam-spike2-${id}))) calc(${thinH3} * var(--beam-h-${id})) at 64% calc(100% - 4px), ${spikes[2].color1}, ${spikes[2].color2} 35%, transparent 89%),
-       radial-gradient(ellipse calc(7px * var(--beam-spike-${id})) calc(45px * var(--beam-h-${id})) at 78% calc(100% - 2px), ${spikes[3].color1}, ${spikes[3].color2} 48%, transparent 94%),
-       radial-gradient(ellipse calc(${thinW4} * (2 - var(--beam-spike-${id}))) calc(${thinH4} * var(--beam-h-${id})) at 92% calc(100% - 3px), ${spikes[4].color1}, ${spikes[4].color2} 42%, transparent 91%),
-       radial-gradient(ellipse calc(21px * var(--beam-spike-${id})) calc(15px * var(--beam-spike2-${id})) at calc(var(--beam-x-${id}) * 100%) calc(100% + 1px), ${glowDotC} 0%, ${glowDot20} 20%, ${glowDot50} 50%, transparent 100%),
-       radial-gradient(ellipse calc(42px * var(--beam-w-${id})) calc(40px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%, ${glowAmbC} 0%, ${glowAmb25} 25%, ${glowAmb55} 55%, transparent 80%)`;
+    return `radial-gradient(ellipse calc(${thinW1} * var(--beam-spike)) calc(${thinH1} * var(--beam-h)) at 8% calc(100% - 2px), ${sc1}, ${sc1_mid} 30%, transparent 88%),
+       radial-gradient(ellipse calc(10px * var(--beam-spike2)) calc(35px * var(--beam-h)) at 22% calc(100% - 4px), ${sc2}, ${sc2_mid} 50%, transparent 95%),
+       radial-gradient(ellipse calc(${thinW2} * (2 - var(--beam-spike))) calc(${thinH2} * var(--beam-h)) at 36% calc(100% - 3px), ${spikes[0].color1}, ${spikes[0].color2} 40%, transparent 90%),
+       radial-gradient(ellipse calc(14px * var(--beam-spike2)) calc(28px * var(--beam-h)) at 50% calc(100% - 2px), ${spikes[1].color1}, ${spikes[1].color2} 55%, transparent 96%),
+       radial-gradient(ellipse calc(${thinW3} * (2 - var(--beam-spike2))) calc(${thinH3} * var(--beam-h)) at 64% calc(100% - 4px), ${spikes[2].color1}, ${spikes[2].color2} 35%, transparent 89%),
+       radial-gradient(ellipse calc(7px * var(--beam-spike)) calc(45px * var(--beam-h)) at 78% calc(100% - 2px), ${spikes[3].color1}, ${spikes[3].color2} 48%, transparent 94%),
+       radial-gradient(ellipse calc(${thinW4} * (2 - var(--beam-spike))) calc(${thinH4} * var(--beam-h)) at 92% calc(100% - 3px), ${spikes[4].color1}, ${spikes[4].color2} 42%, transparent 91%),
+       radial-gradient(ellipse calc(21px * var(--beam-spike)) calc(15px * var(--beam-spike2)) at calc(var(--beam-x) * 100%) calc(100% + 1px), ${glowDotC} 0%, ${glowDot20} 20%, ${glowDot50} 50%, transparent 100%),
+       radial-gradient(ellipse calc(42px * var(--beam-w)) calc(40px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%, ${glowAmbC} 0%, ${glowAmb25} 25%, ${glowAmb55} 55%, transparent 80%)`;
   } else {
     const sc1_lt = isMono ? attenuateSpike(spikeColors.primary, 0.11) : withAlpha(spikeColors.primary, 0.85);
     const sc2_lt = isMono ? attenuateSpike(spikeColors.secondary, 0.09) : withAlpha(spikeColors.secondary, 0.7);
-    return `radial-gradient(ellipse calc(${thinW1} * var(--beam-spike-${id})) calc(${thinH1} * var(--beam-h-${id})) at 8% calc(100% - 2px), ${sc1}, ${sc1_lt} 30%, transparent 88%),
-       radial-gradient(ellipse calc(10px * var(--beam-spike2-${id})) calc(35px * var(--beam-h-${id})) at 22% calc(100% - 4px), ${sc2}, ${sc2_lt} 50%, transparent 95%),
-       radial-gradient(ellipse calc(${thinW2} * (2 - var(--beam-spike-${id}))) calc(${thinH2} * var(--beam-h-${id})) at 36% calc(100% - 3px), ${spikes[0].color1}, ${spikes[0].color2} 40%, transparent 90%),
-       radial-gradient(ellipse calc(14px * var(--beam-spike2-${id})) calc(28px * var(--beam-h-${id})) at 50% calc(100% - 2px), ${spikes[1].color1}, ${spikes[1].color2} 55%, transparent 96%),
-       radial-gradient(ellipse calc(${thinW3} * (2 - var(--beam-spike2-${id}))) calc(${thinH3} * var(--beam-h-${id})) at 64% calc(100% - 4px), ${spikes[2].color1}, ${spikes[2].color2} 35%, transparent 89%),
-       radial-gradient(ellipse calc(7px * var(--beam-spike-${id})) calc(45px * var(--beam-h-${id})) at 78% calc(100% - 2px), ${spikes[3].color1}, ${spikes[3].color2} 48%, transparent 94%),
-       radial-gradient(ellipse calc(${thinLW} * (2 - var(--beam-spike-${id}))) calc(${thinH4} * var(--beam-h-${id})) at 92% calc(100% - 3px), ${spikes[4].color1}, ${spikes[4].color2} 42%, transparent 91%),
-       radial-gradient(ellipse calc(50px * var(--beam-w-${id})) calc(32px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) calc(100%), rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.18) 30%, rgba(0, 0, 0, 0.03) 60%, transparent 85%)`;
+    return `radial-gradient(ellipse calc(${thinW1} * var(--beam-spike)) calc(${thinH1} * var(--beam-h)) at 8% calc(100% - 2px), ${sc1}, ${sc1_lt} 30%, transparent 88%),
+       radial-gradient(ellipse calc(10px * var(--beam-spike2)) calc(35px * var(--beam-h)) at 22% calc(100% - 4px), ${sc2}, ${sc2_lt} 50%, transparent 95%),
+       radial-gradient(ellipse calc(${thinW2} * (2 - var(--beam-spike))) calc(${thinH2} * var(--beam-h)) at 36% calc(100% - 3px), ${spikes[0].color1}, ${spikes[0].color2} 40%, transparent 90%),
+       radial-gradient(ellipse calc(14px * var(--beam-spike2)) calc(28px * var(--beam-h)) at 50% calc(100% - 2px), ${spikes[1].color1}, ${spikes[1].color2} 55%, transparent 96%),
+       radial-gradient(ellipse calc(${thinW3} * (2 - var(--beam-spike2))) calc(${thinH3} * var(--beam-h)) at 64% calc(100% - 4px), ${spikes[2].color1}, ${spikes[2].color2} 35%, transparent 89%),
+       radial-gradient(ellipse calc(7px * var(--beam-spike)) calc(45px * var(--beam-h)) at 78% calc(100% - 2px), ${spikes[3].color1}, ${spikes[3].color2} 48%, transparent 94%),
+       radial-gradient(ellipse calc(${thinLW} * (2 - var(--beam-spike))) calc(${thinH4} * var(--beam-h)) at 92% calc(100% - 3px), ${spikes[4].color1}, ${spikes[4].color2} 42%, transparent 91%),
+       radial-gradient(ellipse calc(50px * var(--beam-w)) calc(32px * var(--beam-h)) at calc(var(--beam-x) * 100%) calc(100%), rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.18) 30%, rgba(0, 0, 0, 0.03) 60%, transparent 85%)`;
   }
 }
 
@@ -768,13 +768,13 @@ const PULSE_OUTER_BLOOM: PulseGradientDef[] = [
 
 // Convert an `rgb()` palette color into `rgba()` whose alpha is the live quadrant
 // opacity custom property, so the gradient breathes per-quadrant.
-function withAlphaVar(color: string, quad: PulseQuad, id: string, tint?: string): string {
-  const tinted = tintColorVar(tint, quad, id);
+function withAlphaVar(color: string, quad: PulseQuad, tint?: string): string {
+  const tinted = tintColorVar(tint, quad);
   if (tinted) return tinted;
 
   const m = color.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
   const rgb = m ? `${m[1]}, ${m[2]}, ${m[3]}` : '255, 255, 255';
-  return `rgba(${rgb}, var(--bop-${quad}-${id}))`;
+  return `rgba(${rgb}, var(--beam-bop-${quad}))`;
 }
 
 function pulseGrad(
@@ -785,37 +785,36 @@ function pulseGrad(
   quad: PulseQuad,
   x: string,
   y: string,
-  id: string,
   tint?: string
 ): string {
   // `--pulse-glow-sx/sy` (set inline by the component for pulse-outside) scale the
   // blob WIDTH/HEIGHT to the measured element size, so the glow fits any component.
   // Positions stay percentage-based, so blobs keep hugging the element's edges.
   // Defaults to 1 (e.g. pulse-inner never sets them), leaving geometry unchanged.
-  return `radial-gradient(ellipse calc(${w}px * var(--bw${region}-${id}) * var(--pulse-glow-sx, 1)) calc(${h}px * var(--bh${region}-${id}) * var(--bgh-${id}) * var(--pulse-glow-sy, 1)) at calc(${x} + var(--bx${region}-${id})) calc(${y} + var(--by${region}-${id})), ${withAlphaVar(color, quad, id, tint)}, transparent)`;
+  return `radial-gradient(ellipse calc(${w}px * var(--beam-bw${region}) * var(--pulse-glow-sx, 1) * var(--pulse-glow-boost, 1)) calc(${h}px * var(--beam-bh${region}) * var(--beam-bgh) * var(--pulse-glow-sy, 1) * var(--pulse-glow-boost, 1)) at calc(${x} + var(--beam-bx${region})) calc(${y} + var(--beam-by${region})), ${withAlphaVar(color, quad, tint)}, transparent)`;
 }
 
 // The 9-gradient perimeter ring (Card 4 ::after / Card 5 stroke share this) —
 // positions + sizes come straight from the palette, region/quad from PULSE_RING_MAP.
-function pulseRingGradients(variant: BorderBeamColorVariant, id: string, tint?: string): string {
+function pulseRingGradients(variant: BorderBeamColorVariant, tint?: string): string {
   return colorPalettes[variant].border
     .map((c, i) => {
       const { region, quad } = PULSE_RING_MAP[i];
       const [x, y] = c.pos.split(' ');
       const [w, h] = c.size.split(' ').map(parseFloat);
-      return pulseGrad(c.color, w, h, region, quad, x, y, id, tint);
+      return pulseGrad(c.color, w, h, region, quad, x, y, tint);
     })
     .join(',\n    ');
 }
 
 // Card 4 inner-perimeter gradients (smaller sizes) plus the bright corner accents.
-function pulseInnerGradients(variant: BorderBeamColorVariant, id: string, isDark: boolean, tint?: string): string {
+function pulseInnerGradients(variant: BorderBeamColorVariant, isDark: boolean, tint?: string): string {
   const palette = colorPalettes[variant].border;
   const grads = palette.map((c, i) => {
     const { region, quad } = PULSE_RING_MAP[i];
     const [x, y] = c.pos.split(' ');
     const [w, h] = PULSE_INNER_SIZES[i];
-    return pulseGrad(c.color, w, h, region, quad, x, y, id, tint);
+    return pulseGrad(c.color, w, h, region, quad, x, y, tint);
   });
   const cornerRGB = isDark ? '255, 255, 255' : '0, 0, 0';
   const cornerAlpha = isDark ? 0.18 : 0.08;
@@ -827,7 +826,7 @@ function pulseInnerGradients(variant: BorderBeamColorVariant, id: string, isDark
   ];
   const cornerGrads = corners.map(
     ([x, y, q]) =>
-      `radial-gradient(ellipse 60px 60px at ${x} ${y}, rgba(${cornerRGB}, calc(${cornerAlpha} * var(--bop-${q}-${id}))), transparent 70%)`
+      `radial-gradient(ellipse 60px 60px at ${x} ${y}, rgba(${cornerRGB}, calc(${cornerAlpha} * var(--beam-bop-${q}))), transparent 70%)`
   );
   return [...grads, ...cornerGrads].join(',\n    ');
 }
@@ -836,7 +835,6 @@ function pulseInnerGradients(variant: BorderBeamColorVariant, id: string, isDark
 function pulseTableGradients(
   table: PulseGradientDef[],
   variant: BorderBeamColorVariant,
-  id: string,
   tint?: string
 ): string {
   const palette = colorPalettes[variant].border;
@@ -844,14 +842,14 @@ function pulseTableGradients(
     .map(e => {
       const c = palette[e.ci];
       const [px, py] = c.pos.split(' ');
-      return pulseGrad(c.color, e.w, e.h, e.region, e.quad, e.x ?? px, e.y ?? py, id, tint);
+      return pulseGrad(c.color, e.w, e.h, e.region, e.quad, e.x ?? px, e.y ?? py, tint);
     })
     .join(',\n    ');
 }
 
 // Frozen variant of the bloom gradients: emits literal sizes/positions with a
 // fixed per-blob alpha (the time-average of the breathing range) instead of the
-// live `var(--bw…/--bop…)` custom properties. Because the bloom's background no
+// live `var(--beam-bw…/--bop…)` custom properties. Because the bloom's background no
 // longer changes per frame, its heavily-blurred bitmap is painted ONCE and cached
 // by the compositor rather than re-rasterized 60–120×/sec — the single biggest
 // per-frame cost in the pulse effect.
@@ -871,7 +869,7 @@ function pulseTableGradientsStatic(
       const y = e.y ?? py;
       const tinted = tintColor(tint, a);
       if (tinted) {
-        return `radial-gradient(ellipse calc(${e.w}px * var(--pulse-glow-sx, 1)) calc(${e.h}px * var(--pulse-glow-sy, 1)) at ${x} ${y}, ${tinted}, transparent)`;
+        return `radial-gradient(ellipse calc(${e.w}px * var(--pulse-glow-sx, 1) * var(--pulse-glow-boost, 1)) calc(${e.h}px * var(--pulse-glow-sy, 1) * var(--pulse-glow-boost, 1)) at ${x} ${y}, ${tinted}, transparent)`;
       }
 
       const m = c.color.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
@@ -880,39 +878,164 @@ function pulseTableGradientsStatic(
       // the live stroke/core layers). The var only changes on resize, so the
       // blurred bloom bitmap is still painted once and cached between resizes.
       // Defaults to 1 (pulse-inner never sets it), leaving inner geometry as-is.
-      return `radial-gradient(ellipse calc(${e.w}px * var(--pulse-glow-sx, 1)) calc(${e.h}px * var(--pulse-glow-sy, 1)) at ${x} ${y}, rgba(${rgb}, ${a}), transparent)`;
+      return `radial-gradient(ellipse calc(${e.w}px * var(--pulse-glow-sx, 1) * var(--pulse-glow-boost, 1)) calc(${e.h}px * var(--pulse-glow-sy, 1) * var(--pulse-glow-boost, 1)) at ${x} ${y}, rgba(${rgb}, ${a}), transparent)`;
     })
     .join(',\n    ');
 }
 
-// Pauses every animation on an instance (wrapper + pseudo layers + bloom) when it
-// carries the `data-paused` attribute. Driven by an IntersectionObserver so beams
-// that are scrolled offscreen stop doing per-frame paint work entirely.
-function pausedAnimationsRule(id: string): string {
-  return `
-[data-beam="${id}"][data-paused],
-[data-beam="${id}"][data-paused]::after,
-[data-beam="${id}"][data-paused]::before,
-[data-beam="${id}"][data-paused] [data-beam-bloom] {
-  animation-play-state: paused !important;
-}`;
+// ── Shared base stylesheet ───────────────────────────────────────────────────
+// Everything that is identical for every BorderBeam instance lives here and is
+// injected into <head> exactly once (see useBeamStylesheet): the @property
+// registrations, every keyframe (parameterized through inherited custom
+// properties, so one definition serves all instances), the offscreen pause rule
+// and the reduced-motion rule for the pulse family.
+
+const propertyReg = (name: string, syntax: string, initial: string): string =>
+  `@property ${name} {\n  syntax: "${syntax}";\n  initial-value: ${initial};\n  inherits: true;\n}`;
+
+const BEAM_PROPERTY_REGS = [
+  // Rotating beam (sm/md)
+  propertyReg('--beam-angle', '<angle>', '0deg'),
+  // Shared fade
+  propertyReg('--beam-opacity', '<number>', '0'),
+  // Line travel
+  propertyReg('--beam-x', '<number>', '0'),
+  propertyReg('--beam-w', '<number>', '1'),
+  propertyReg('--beam-h', '<number>', '1'),
+  propertyReg('--beam-spike', '<number>', '1'),
+  propertyReg('--beam-spike2', '<number>', '1'),
+  propertyReg('--beam-edge', '<number>', '1'),
+  // Pulse breathing (JS-driven oscillators) + hue drift
+  ...['--beam-bw1', '--beam-bh1', '--beam-bw2', '--beam-bh2', '--beam-bw3', '--beam-bh3', '--beam-bgh', '--beam-bop-tl', '--beam-bop-tr', '--beam-bop-bl', '--beam-bop-br']
+    .map(n => propertyReg(n, '<number>', '1')),
+  ...['--beam-bx1', '--beam-by1', '--beam-bx2', '--beam-by2', '--beam-bx3', '--beam-by3']
+    .map(n => propertyReg(n, '<length>', '0px')),
+  propertyReg('--beam-hue', '<angle>', '0deg'),
+].join('\n\n');
+
+export const BEAM_BASE_CSS = `
+${BEAM_PROPERTY_REGS}
+
+@keyframes beam-spin {
+  to { --beam-angle: 360deg; }
 }
 
-// @property registrations for all per-instance pulse custom properties.
-function pulsePropertyRegs(id: string): string {
-  const numbers = ['bw1', 'bh1', 'bw2', 'bh2', 'bw3', 'bh3', 'bgh', 'bop-tl', 'bop-tr', 'bop-bl', 'bop-br'];
-  const lengths = ['bx1', 'by1', 'bx2', 'by2', 'bx3', 'by3'];
-  const numReg = numbers
-    .map(
-      n => `@property --${n}-${id} {\n  syntax: "<number>";\n  initial-value: 1;\n  inherits: true;\n}`
-    )
-    .join('\n\n');
-  const lenReg = lengths
-    .map(
-      n => `@property --${n}-${id} {\n  syntax: "<length>";\n  initial-value: 0px;\n  inherits: true;\n}`
-    )
-    .join('\n\n');
-  return `${numReg}\n\n${lenReg}\n\n@property --beam-opacity-${id} {\n  syntax: "<number>";\n  initial-value: 0;\n  inherits: true;\n}\n\n@property --beam-hue-${id} {\n  syntax: "<angle>";\n  initial-value: 0deg;\n  inherits: true;\n}`;
+@keyframes beam-fade-in {
+  to { --beam-opacity: 1; }
+}
+
+@keyframes beam-fade-out {
+  from { --beam-opacity: 1; }
+  to { --beam-opacity: 0; }
+}
+
+@keyframes beam-hue-shift {
+  0% { filter: hue-rotate(calc(var(--beam-hue-base, 0deg) - var(--beam-hue-range, 30deg))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+  50% { filter: hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue-range, 30deg))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+  100% { filter: hue-rotate(calc(var(--beam-hue-base, 0deg) - var(--beam-hue-range, 30deg))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+}
+
+@keyframes beam-hue-shift-bloom {
+  0% { filter: blur(8px) hue-rotate(calc(var(--beam-hue-base, 0deg) - var(--beam-hue-range, 30deg) - 10deg)) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+  50% { filter: blur(8px) hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue-range, 30deg) + 10deg)) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+  100% { filter: blur(8px) hue-rotate(calc(var(--beam-hue-base, 0deg) - var(--beam-hue-range, 30deg) - 10deg)) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2)); }
+}
+
+@keyframes beam-travel {
+  0%   { --beam-x: 0.06;  --beam-w: 0.5; }
+  10%  { --beam-x: 0.15;  --beam-w: 0.8; }
+  20%  { --beam-x: 0.25;  --beam-w: 1.1; }
+  30%  { --beam-x: 0.35;  --beam-w: 1.3; }
+  40%  { --beam-x: 0.44;  --beam-w: 1.45; }
+  50%  { --beam-x: 0.5;   --beam-w: 1.5; }
+  60%  { --beam-x: 0.56;  --beam-w: 1.45; }
+  70%  { --beam-x: 0.65;  --beam-w: 1.3; }
+  80%  { --beam-x: 0.75;  --beam-w: 1.1; }
+  90%  { --beam-x: 0.85;  --beam-w: 0.8; }
+  100% { --beam-x: 0.94;  --beam-w: 0.5; }
+}
+
+@keyframes beam-edge-fade {
+  0%    { --beam-edge: 0; }
+  12.5% { --beam-edge: 0; }
+  32.5% { --beam-edge: 1; }
+  67.5% { --beam-edge: 1; }
+  87.5% { --beam-edge: 0; }
+  100%  { --beam-edge: 0; }
+}
+
+@keyframes beam-breathe {
+  0%, 100% { --beam-h: 0.8; }
+  25%      { --beam-h: 1.25; }
+  55%      { --beam-h: 0.85; }
+  80%      { --beam-h: 1.3; }
+}
+
+@keyframes beam-spike {
+  0%   { --beam-spike: 0.8; }
+  25%  { --beam-spike: 1.3; }
+  50%  { --beam-spike: 0.9; }
+  75%  { --beam-spike: 1.4; }
+  100% { --beam-spike: 0.8; }
+}
+
+@keyframes beam-spike2 {
+  0%   { --beam-spike2: 1.2; }
+  25%  { --beam-spike2: 0.7; }
+  50%  { --beam-spike2: 1.4; }
+  75%  { --beam-spike2: 0.8; }
+  100% { --beam-spike2: 1.2; }
+}
+
+/* Pauses every animation on an instance (wrapper + pseudo layers + bloom) when it
+   carries the data-paused attribute. Driven by an IntersectionObserver so beams
+   that are scrolled offscreen stop doing per-frame paint work entirely. */
+[data-beam][data-paused],
+[data-beam][data-paused]::after,
+[data-beam][data-paused]::before,
+[data-beam][data-paused] > [data-beam-bloom] {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-beam^="pulse-"][data-active],
+  [data-beam^="pulse-"][data-fading],
+  [data-beam^="pulse-"][data-active]::after,
+  [data-beam^="pulse-"][data-fading]::after,
+  [data-beam^="pulse-"][data-active]::before,
+  [data-beam^="pulse-"][data-fading]::before,
+  [data-beam^="pulse-"][data-active] > [data-beam-bloom],
+  [data-beam^="pulse-"][data-fading] > [data-beam-bloom] {
+    animation: none !important;
+  }
+}
+`;
+
+/** Tiny stable string hash (djb2) — keys arbitrary tint strings CSS-safely. */
+function hashString(value: string): string {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i++) {
+    hash = ((hash << 5) + hash + value.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+/**
+ * Deterministic key for one generated-CSS configuration. Instances with the
+ * same key share the same injected stylesheet; the key doubles as the value of
+ * the wrapper's `data-beam` attribute, which every generated selector targets.
+ * (The reduced-motion rule in BEAM_BASE_CSS relies on pulse keys starting with
+ * "pulse-".)
+ */
+export function beamCssKey(options: GenerateStylesOptions): string {
+  const parts: string[] = [
+    options.size,
+    options.theme,
+    options.colorVariant,
+    options.staticColors ? 'static' : 'anim',
+  ];
+  if (options.tint) parts.push(`tint-${hashString(options.tint)}`);
+  return parts.join('_');
 }
 
 // ── Pulse breathing driver ───────────────────────────────────────────────────
@@ -980,26 +1103,26 @@ function pulseParams(size: BorderBeamSize, theme: 'dark' | 'light', duration: nu
 }
 
 /** Build the oscillator table for an instance (matches the former keyframes). */
-function pulseOscillatorDefs(id: string, p: ReturnType<typeof pulseParams>): PulseOscillatorDef[] {
+function pulseOscillatorDefs(p: ReturnType<typeof pulseParams>): PulseOscillatorDef[] {
   const { sp, dr, op, gh, bs, ss, ghs } = p;
   return [
-    { prop: `--bw1-${id}`, a: 1 - sp, b: 1 + sp * 1.1, period: ss * 0.9, delay: 0, unit: '' },
-    { prop: `--bh1-${id}`, a: 1 + sp * 0.9, b: 1 - sp * 0.85, period: ss * 1.26, delay: 0, unit: '' },
-    { prop: `--bx1-${id}`, a: -dr, b: dr * 0.9, period: bs * 1.6, delay: 0, unit: 'px' },
-    { prop: `--by1-${id}`, a: dr * 0.55, b: -dr * 0.7, period: bs * 1.6, delay: 0, unit: 'px' },
-    { prop: `--bw2-${id}`, a: 1 + sp, b: 1 - sp * 0.85, period: ss * 1.1, delay: 0, unit: '' },
-    { prop: `--bh2-${id}`, a: 1 - sp * 0.8, b: 1 + sp * 1.05, period: ss * 0.81, delay: 0, unit: '' },
-    { prop: `--bx2-${id}`, a: dr * 0.8, b: -dr * 0.9, period: bs * 1.88, delay: 0, unit: 'px' },
-    { prop: `--by2-${id}`, a: -dr, b: dr * 0.65, period: bs * 1.88, delay: 0, unit: 'px' },
-    { prop: `--bw3-${id}`, a: 1 - sp * 0.6, b: 1 + sp * 1.15, period: ss * 0.98, delay: 0, unit: '' },
-    { prop: `--bh3-${id}`, a: 1 + sp * 0.75, b: 1 - sp, period: ss * 1.4, delay: 0, unit: '' },
-    { prop: `--bx3-${id}`, a: -dr * 0.6, b: dr, period: bs * 1.45, delay: 0, unit: 'px' },
-    { prop: `--by3-${id}`, a: -dr * 0.85, b: dr * 0.45, period: bs * 1.45, delay: 0, unit: 'px' },
-    { prop: `--bgh-${id}`, a: 1 - gh, b: 1 + gh, period: ghs, delay: 0, unit: '' },
-    { prop: `--bop-tl-${id}`, a: 1 - op, b: 1, period: bs, delay: 0, unit: '' },
-    { prop: `--bop-tr-${id}`, a: 1 - op, b: 1, period: bs * 1.32, delay: bs * 0.28, unit: '' },
-    { prop: `--bop-bl-${id}`, a: 1 - op, b: 1, period: bs * 0.84, delay: bs * 0.55, unit: '' },
-    { prop: `--bop-br-${id}`, a: 1 - op, b: 1, period: bs * 1.58, delay: bs * 0.83, unit: '' },
+    { prop: `--beam-bw1`, a: 1 - sp, b: 1 + sp * 1.1, period: ss * 0.9, delay: 0, unit: '' },
+    { prop: `--beam-bh1`, a: 1 + sp * 0.9, b: 1 - sp * 0.85, period: ss * 1.26, delay: 0, unit: '' },
+    { prop: `--beam-bx1`, a: -dr, b: dr * 0.9, period: bs * 1.6, delay: 0, unit: 'px' },
+    { prop: `--beam-by1`, a: dr * 0.55, b: -dr * 0.7, period: bs * 1.6, delay: 0, unit: 'px' },
+    { prop: `--beam-bw2`, a: 1 + sp, b: 1 - sp * 0.85, period: ss * 1.1, delay: 0, unit: '' },
+    { prop: `--beam-bh2`, a: 1 - sp * 0.8, b: 1 + sp * 1.05, period: ss * 0.81, delay: 0, unit: '' },
+    { prop: `--beam-bx2`, a: dr * 0.8, b: -dr * 0.9, period: bs * 1.88, delay: 0, unit: 'px' },
+    { prop: `--beam-by2`, a: -dr, b: dr * 0.65, period: bs * 1.88, delay: 0, unit: 'px' },
+    { prop: `--beam-bw3`, a: 1 - sp * 0.6, b: 1 + sp * 1.15, period: ss * 0.98, delay: 0, unit: '' },
+    { prop: `--beam-bh3`, a: 1 + sp * 0.75, b: 1 - sp, period: ss * 1.4, delay: 0, unit: '' },
+    { prop: `--beam-bx3`, a: -dr * 0.6, b: dr, period: bs * 1.45, delay: 0, unit: 'px' },
+    { prop: `--beam-by3`, a: -dr * 0.85, b: dr * 0.45, period: bs * 1.45, delay: 0, unit: 'px' },
+    { prop: `--beam-bgh`, a: 1 - gh, b: 1 + gh, period: ghs, delay: 0, unit: '' },
+    { prop: `--beam-bop-tl`, a: 1 - op, b: 1, period: bs, delay: 0, unit: '' },
+    { prop: `--beam-bop-tr`, a: 1 - op, b: 1, period: bs * 1.32, delay: bs * 0.28, unit: '' },
+    { prop: `--beam-bop-bl`, a: 1 - op, b: 1, period: bs * 0.84, delay: bs * 0.55, unit: '' },
+    { prop: `--beam-bop-br`, a: 1 - op, b: 1, period: bs * 1.58, delay: bs * 0.83, unit: '' },
   ];
 }
 
@@ -1012,51 +1135,41 @@ export function getPulseDriverConfig(
   theme: 'dark' | 'light',
   duration: number,
   _hueRange: number,
-  staticColors: boolean,
-  id: string
+  staticColors: boolean
 ): PulseDriverConfig | null {
   if (size !== 'pulse-inner' && size !== 'pulse-outside') return null;
   const p = pulseParams(size, theme, duration);
   return {
-    oscillators: pulseOscillatorDefs(id, p),
+    oscillators: pulseOscillatorDefs(p),
     // Pulse colors continuously rotate a full hue circle so the palette is never
     // pinned to fixed edges (no more "always red top-right / green left").
     hue: staticColors
       ? null
-      : { prop: `--beam-hue-${id}`, range: 360, period: p.huePeriod, continuous: true },
+      : { prop: '--beam-hue', range: 360, period: p.huePeriod, continuous: true },
   };
 }
 
 // Only the (short, one-shot) fade is still a CSS animation; the breathing is
 // driven from JS so it can be frame-rate capped and paused offscreen.
-function pulseWrapperAnimation(id: string, fadeName: string, fadeDur: number): string {
-  return `  animation: ${fadeName}-${id} ${fadeDur}s ease forwards;`;
+function pulseWrapperAnimation(fadeName: string, fadeDur: number): string {
+  return `  animation: ${fadeName} ${fadeDur}s ease forwards;`;
 }
 
-interface GenerateStylesOptions {
-  id: string;
-  borderRadius: number;
-  borderWidth: number;
-  duration: number;
-  strokeOpacity: number;
-  innerOpacity: number;
-  bloomOpacity: number;
-  innerShadow: string;
+export interface GenerateStylesOptions {
   size: BorderBeamSize;
   colorVariant: BorderBeamColorVariant;
   staticColors: boolean;
-  brightness: number;
-  saturation: number;
-  hueRange: number;
   theme: 'dark' | 'light';
   /** Custom single-color tint for all generated beam gradients. */
   tint?: string;
-  /** Opacity of the 1px hairline outline (pulse-outside only). Falls back to 0. */
-  hairlineOpacity?: number;
 }
 
 /**
- * Generate complete CSS for a BorderBeam instance
+ * Generate the shared CSS for one BorderBeam configuration (size × theme ×
+ * color variant × staticColors × tint). Everything per-instance — radius,
+ * duration, opacities, brightness/saturation, hue range — is consumed through
+ * CSS custom properties that the component sets inline on its wrapper, so all
+ * instances with the same configuration share this stylesheet verbatim.
  */
 export function generateBeamCSS(options: GenerateStylesOptions): string {
   const { size } = options;
@@ -1081,47 +1194,18 @@ export function generateBeamCSS(options: GenerateStylesOptions): string {
 }
 
 function generateSmallVariantCSS(options: GenerateStylesOptions): string {
-  const {
-    id,
-    borderRadius,
-    borderWidth,
-    duration,
-    strokeOpacity,
-    innerOpacity,
-    bloomOpacity,
-    innerShadow,
-    colorVariant,
-    tint,
-    staticColors,
-    brightness,
-    saturation,
-    hueRange,
-    theme,
-  } = options;
+  const { colorVariant, tint, staticColors, theme } = options;
+  const key = beamCssKey(options);
 
-  const innerRadius = Math.max(0, borderRadius - borderWidth);
-  
-  const monoOpacityMultiplier = colorVariant === 'mono' ? 0.5 : 1.0;
-  const finalStrokeOpacity = strokeOpacity * monoOpacityMultiplier;
-  const finalInnerOpacity = innerOpacity * monoOpacityMultiplier;
-  const finalBloomOpacity = bloomOpacity * monoOpacityMultiplier;
-  
-  const hueShiftAnimation = staticColors 
-    ? '' 
-    : `animation: beam-hue-shift-${id} 12s ease-in-out infinite;`;
-  
-  const hueShiftKeyframes = staticColors ? '' : `
-@keyframes beam-hue-shift-${id} {
-  0% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  50% { filter: hue-rotate(${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  100% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-}`;
+  const hueShiftAnimation = staticColors
+    ? ''
+    : `animation: beam-hue-shift 12s ease-in-out infinite;`;
 
   const isDark = theme === 'dark';
   
   const whiteGradient = isDark
     ? `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 54%,
         rgba(255, 255, 255, 0.1) 57%,
         rgba(255, 255, 255, 0.3) 60%,
@@ -1133,7 +1217,7 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
         transparent 78%, transparent 100%
       )`
     : `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 54%,
         rgba(0, 0, 0, 0.08) 57%,
         rgba(0, 0, 0, 0.2) 60%,
@@ -1150,7 +1234,7 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
 
   const bloomGradient = isDark
     ? `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 58%,
         rgba(255, 255, 255, 0.03) 62%,
         rgba(255, 255, 255, 0.08) 65%,
@@ -1165,7 +1249,7 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
         transparent 82%
       )`
     : `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 58%,
         rgba(0, 0, 0, 0.02) 62%,
         rgba(0, 0, 0, 0.08) 65%,
@@ -1182,7 +1266,7 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
 
   // Small variant uses wider mask to show more of the beam around the smaller element
   const smallMask = `conic-gradient(
-    from var(--beam-angle-${id}),
+    from var(--beam-angle),
     transparent 0%, transparent 22%,
     rgba(255, 255, 255, 0.12) 28%, rgba(255, 255, 255, 0.4) 36%,
     white 46%, white 82%,
@@ -1191,48 +1275,36 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
   )`;
 
   return `
-@property --beam-angle-${id} {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: true;
-}
-
-@property --beam-opacity-${id} {
-  syntax: "<number>";
-  initial-value: 0;
-  inherits: true;
-}
-
-[data-beam="${id}"] {
+[data-beam="${key}"] {
   position: relative;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   overflow: hidden;
 }
 
-[data-beam="${id}"][data-active] {
+[data-beam="${key}"][data-active] {
   animation:
-    beam-spin-${id} ${duration}s linear infinite,
-    beam-fade-in-${id} 0.6s ease forwards;
+    beam-spin var(--beam-duration, 1.96s) linear infinite,
+    beam-fade-in 0.6s ease forwards;
 }
 
-[data-beam="${id}"][data-fading] {
+[data-beam="${key}"][data-fading] {
   animation:
-    beam-spin-${id} ${duration}s linear infinite,
-    beam-fade-out-${id} 0.5s ease forwards;
+    beam-spin var(--beam-duration, 1.96s) linear infinite,
+    beam-fade-out 0.5s ease forwards;
 }
 
-[data-beam="${id}"][data-active]::after,
-[data-beam="${id}"][data-fading]::after {
+[data-beam="${key}"][data-active]::after,
+[data-beam="${key}"][data-fading]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  padding: ${borderWidth}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  padding: var(--beam-border-width, 1px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${whiteGradient},${colorGradients};
   -webkit-mask:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1244,7 +1316,7 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
   -webkit-mask-composite: source-in, xor;
   mask:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1256,113 +1328,69 @@ function generateSmallVariantCSS(options: GenerateStylesOptions): string {
   mask-composite: intersect, exclude;
   pointer-events: none;
   z-index: 2;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalStrokeOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-stroke-mul, 1) * var(--beam-stroke-opacity, 1) * var(--beam-strength, 1));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"][data-active]::before,
-[data-beam="${id}"][data-fading]::before {
+[data-beam="${key}"][data-active]::before,
+[data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-radius, 16px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${innerGradients};
-  box-shadow: inset 0 0 5px 1px ${innerShadow};
+  box-shadow: inset 0 0 5px 1px var(--beam-inner-shadow, transparent);
   -webkit-mask-image: ${smallMask};
   -webkit-mask-composite: source-over;
   mask-image: ${smallMask};
   mask-composite: add;
   pointer-events: none;
   z-index: 1;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalInnerOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"] [data-beam-bloom] {
+[data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${bloomGradient};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  padding: ${borderWidth}px;
-  filter: blur(8px) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)});
+  padding: var(--beam-border-width, 1px);
+  filter: blur(8px) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));
   pointer-events: none;
   z-index: 3;
   opacity: 0;
 }
 
-[data-beam="${id}"][data-active] [data-beam-bloom],
-[data-beam="${id}"][data-fading] [data-beam-bloom] {
+[data-beam="${key}"][data-active] [data-beam-bloom],
+[data-beam="${key}"][data-fading] [data-beam-bloom] {
   display: block;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalBloomOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-bloom-mul, 1) * var(--beam-bloom-opacity, 1) * var(--beam-strength, 1));
 }
 
-@keyframes beam-spin-${id} {
-  to { --beam-angle-${id}: 360deg; }
-}
-
-@keyframes beam-fade-in-${id} {
-  to { --beam-opacity-${id}: 1; }
-}
-
-@keyframes beam-fade-out-${id} {
-  from { --beam-opacity-${id}: 1; }
-  to { --beam-opacity-${id}: 0; }
-}
-${hueShiftKeyframes}
-${pausedAnimationsRule(id)}
 `;
 }
 
 function generateBorderVariantCSS(options: GenerateStylesOptions): string {
-  const {
-    id,
-    borderRadius,
-    borderWidth,
-    duration,
-    strokeOpacity,
-    innerOpacity,
-    bloomOpacity,
-    innerShadow,
-    colorVariant,
-    tint,
-    staticColors,
-    brightness,
-    saturation,
-    hueRange,
-    theme,
-  } = options;
+  const { colorVariant, tint, staticColors, theme } = options;
+  const key = beamCssKey(options);
 
-  const innerRadius = Math.max(0, borderRadius - borderWidth);
-  
-  // Mono variant gets 50% lower opacity
-  const monoOpacityMultiplier = colorVariant === 'mono' ? 0.5 : 1.0;
-  const finalStrokeOpacity = strokeOpacity * monoOpacityMultiplier;
-  const finalInnerOpacity = innerOpacity * monoOpacityMultiplier;
-  const finalBloomOpacity = bloomOpacity * monoOpacityMultiplier;
-  
-  const hueShiftAnimation = staticColors 
-    ? '' 
-    : `animation: beam-hue-shift-${id} 12s ease-in-out infinite;`;
-  
-  const hueShiftKeyframes = staticColors ? '' : `
-@keyframes beam-hue-shift-${id} {
-  0% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  50% { filter: hue-rotate(${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  100% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-}`;
+  const hueShiftAnimation = staticColors
+    ? ''
+    : `animation: beam-hue-shift 12s ease-in-out infinite;`;
 
   const isDark = theme === 'dark';
   
   const whiteGradient = isDark
     ? `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 54%,
         rgba(255, 255, 255, 0.1) 57%,
         rgba(255, 255, 255, 0.3) 60%,
@@ -1374,7 +1402,7 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
         transparent 78%, transparent 100%
       )`
     : `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 54%,
         rgba(0, 0, 0, 0.08) 57%,
         rgba(0, 0, 0, 0.2) 60%,
@@ -1391,7 +1419,7 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
 
   const bloomGradient = isDark
     ? `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 58%,
         rgba(255, 255, 255, 0.03) 62%,
         rgba(255, 255, 255, 0.08) 65%,
@@ -1406,7 +1434,7 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
         transparent 82%
       )`
     : `conic-gradient(
-        from var(--beam-angle-${id}),
+        from var(--beam-angle),
         transparent 0%, transparent 58%,
         rgba(0, 0, 0, 0.02) 62%,
         rgba(0, 0, 0, 0.08) 65%,
@@ -1422,48 +1450,36 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
       )`;
 
   return `
-@property --beam-angle-${id} {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: true;
-}
-
-@property --beam-opacity-${id} {
-  syntax: "<number>";
-  initial-value: 0;
-  inherits: true;
-}
-
-[data-beam="${id}"] {
+[data-beam="${key}"] {
   position: relative;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   overflow: hidden;
 }
 
-[data-beam="${id}"][data-active] {
+[data-beam="${key}"][data-active] {
   animation:
-    beam-spin-${id} ${duration}s linear infinite,
-    beam-fade-in-${id} 0.6s ease forwards;
+    beam-spin var(--beam-duration, 1.96s) linear infinite,
+    beam-fade-in 0.6s ease forwards;
 }
 
-[data-beam="${id}"][data-fading] {
+[data-beam="${key}"][data-fading] {
   animation:
-    beam-spin-${id} ${duration}s linear infinite,
-    beam-fade-out-${id} 0.5s ease forwards;
+    beam-spin var(--beam-duration, 1.96s) linear infinite,
+    beam-fade-out 0.5s ease forwards;
 }
 
-[data-beam="${id}"][data-active]::after,
-[data-beam="${id}"][data-fading]::after {
+[data-beam="${key}"][data-active]::after,
+[data-beam="${key}"][data-fading]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  padding: ${borderWidth}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  padding: var(--beam-border-width, 1px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${whiteGradient},${colorGradients};
   -webkit-mask:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1475,7 +1491,7 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
   -webkit-mask-composite: source-in, xor;
   mask:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1487,21 +1503,21 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
   mask-composite: intersect, exclude;
   pointer-events: none;
   z-index: 2;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalStrokeOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-stroke-mul, 1) * var(--beam-stroke-opacity, 1) * var(--beam-strength, 1));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"][data-active]::before,
-[data-beam="${id}"][data-fading]::before {
+[data-beam="${key}"][data-active]::before,
+[data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   background: ${innerGradients};
-  box-shadow: inset 0 0 9px 1px ${innerShadow};
+  box-shadow: inset 0 0 9px 1px var(--beam-inner-shadow, transparent);
   -webkit-mask-image:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1513,7 +1529,7 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
   -webkit-mask-composite: source-in, source-over;
   mask-image:
     conic-gradient(
-      from var(--beam-angle-${id}),
+      from var(--beam-angle),
       transparent 0%, transparent 30%,
       rgba(255, 255, 255, 0.1) 36%, rgba(255, 255, 255, 0.35) 44%,
       white 52%, white 80%,
@@ -1525,49 +1541,35 @@ function generateBorderVariantCSS(options: GenerateStylesOptions): string {
   mask-composite: intersect, add;
   pointer-events: none;
   z-index: 1;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalInnerOpacity.toFixed(2)} * var(--beam-strength, 1));
-  clip-path: inset(0 round ${borderRadius}px);
+  opacity: calc(var(--beam-opacity) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
+  clip-path: inset(0 round var(--beam-radius, 16px));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"] [data-beam-bloom] {
+[data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${bloomGradient};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  padding: ${borderWidth}px;
-  filter: blur(8px) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)});
+  padding: var(--beam-border-width, 1px);
+  filter: blur(8px) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));
   pointer-events: none;
   z-index: 3;
   opacity: 0;
 }
 
-[data-beam="${id}"][data-active] [data-beam-bloom],
-[data-beam="${id}"][data-fading] [data-beam-bloom] {
+[data-beam="${key}"][data-active] [data-beam-bloom],
+[data-beam="${key}"][data-fading] [data-beam-bloom] {
   display: block;
-  opacity: calc(var(--beam-opacity-${id}) * ${finalBloomOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-bloom-mul, 1) * var(--beam-bloom-opacity, 1) * var(--beam-strength, 1));
 }
 
-@keyframes beam-spin-${id} {
-  to { --beam-angle-${id}: 360deg; }
-}
-
-@keyframes beam-fade-in-${id} {
-  to { --beam-opacity-${id}: 1; }
-}
-
-@keyframes beam-fade-out-${id} {
-  from { --beam-opacity-${id}: 1; }
-  to { --beam-opacity-${id}: 0; }
-}
-${hueShiftKeyframes}
-${pausedAnimationsRule(id)}
 `;
 }
 
@@ -1577,70 +1579,57 @@ ${pausedAnimationsRule(id)}
  * accents (::before), and a soft blurred bloom, all clipped inside the element.
  */
 function generatePulseInnerVariantCSS(options: GenerateStylesOptions): string {
-  const {
-    id, borderRadius, borderWidth, duration,
-    strokeOpacity, innerOpacity, bloomOpacity,
-    colorVariant, staticColors, brightness, saturation, theme, tint,
-  } = options;
+  const { colorVariant, staticColors, theme, tint } = options;
+  const key = beamCssKey(options);
 
   const isDark = theme === 'dark';
-
-  const monoMul = colorVariant === 'mono' ? 0.5 : 1.0;
-  const sStroke = (strokeOpacity * monoMul).toFixed(2);
-  const sInner = (innerOpacity * monoMul).toFixed(2);
-  const sBloom = (bloomOpacity * monoMul).toFixed(2);
 
   // Breathing parameters (theme-tuned). The motion itself is now driven from JS
   // (see getPulseDriverConfig / pulseDriver.ts); only `op` is needed here to set
   // the frozen bloom's average alpha.
-  const { op } = pulseParams('pulse-inner', theme, duration);
+  const { op } = pulseParams('pulse-inner', theme, 2.3);
   const bloomBlur = 8;
-
-  const b = brightness.toFixed(2);
-  const s = saturation.toFixed(2);
 
   // Slow hue drift is driven into --beam-hue-<id> by the JS loop (capped fps),
   // so the breathing layers no longer repaint at the display refresh rate.
   const ringAnim = staticColors
-    ? `filter: brightness(${b}) saturate(${s});`
-    : `filter: hue-rotate(var(--beam-hue-${id})) brightness(${b}) saturate(${s});`;
+    ? `filter: brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`
+    : `filter: hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`;
   // Bloom shares the SAME hue rotation as the ring so the wide glow and the tight
   // ring stay color-synced. Gradients keep frozen opacity; only hue-rotate varies.
   const bloomAnim = staticColors
-    ? `filter: blur(${bloomBlur}px) brightness(${b}) saturate(${s});`
-    : `filter: blur(${bloomBlur}px) hue-rotate(var(--beam-hue-${id})) brightness(${b}) saturate(${s});`;
+    ? `filter: blur(${bloomBlur}px) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`
+    : `filter: blur(${bloomBlur}px) hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`;
 
-  const ringGradients = pulseRingGradients(colorVariant, id, tint);
-  const innerGradients = pulseInnerGradients(colorVariant, id, isDark, tint);
+  const ringGradients = pulseRingGradients(colorVariant, tint);
+  const innerGradients = pulseInnerGradients(colorVariant, isDark, tint);
   // Frozen at the breathing time-average (midpoint of the [1-op, 1] opacity range).
   const bloomGradients = pulseTableGradientsStatic(PULSE_INNER_BLOOM, colorVariant, 1 - op * 0.5, tint);
 
   return `
-${pulsePropertyRegs(id)}
-
-[data-beam="${id}"] {
+[data-beam="${key}"] {
   position: relative;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   overflow: hidden;
   isolation: isolate;
 }
 
-[data-beam="${id}"][data-active] {
-${pulseWrapperAnimation(id, 'beam-fade-in', 0.6)}
+[data-beam="${key}"][data-active] {
+${pulseWrapperAnimation('beam-fade-in', 0.6)}
 }
 
-[data-beam="${id}"][data-fading] {
-${pulseWrapperAnimation(id, 'beam-fade-out', 0.5)}
+[data-beam="${key}"][data-fading] {
+${pulseWrapperAnimation('beam-fade-out', 0.5)}
 }
 
-[data-beam="${id}"][data-active]::after,
-[data-beam="${id}"][data-fading]::after {
+[data-beam="${key}"][data-active]::after,
+[data-beam="${key}"][data-fading]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
-  padding: ${borderWidth}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-radius, 16px);
+  padding: var(--beam-border-width, 1px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${ringGradients};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -1649,17 +1638,17 @@ ${pulseWrapperAnimation(id, 'beam-fade-out', 0.5)}
   pointer-events: none;
   z-index: 2;
   will-change: opacity, filter;
-  opacity: calc(var(--beam-opacity-${id}) * ${sStroke} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-stroke-mul, 1) * var(--beam-stroke-opacity, 1) * var(--beam-strength, 1));
   ${ringAnim}
 }
 
-[data-beam="${id}"][data-active]::before,
-[data-beam="${id}"][data-fading]::before {
+[data-beam="${key}"][data-active]::before,
+[data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-radius, 16px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${innerGradients};
   -webkit-mask-image:
     linear-gradient(white, transparent 28px, transparent calc(100% - 28px), white),
@@ -1672,51 +1661,35 @@ ${pulseWrapperAnimation(id, 'beam-fade-out', 0.5)}
   pointer-events: none;
   z-index: 1;
   will-change: opacity, filter;
-  opacity: calc(var(--beam-opacity-${id}) * ${sInner} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
   ${ringAnim}
 }
 
-[data-beam="${id}"] [data-beam-bloom] {
+[data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-radius, 16px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${bloomGradients};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  padding: ${borderWidth}px;
+  padding: var(--beam-border-width, 1px);
   pointer-events: none;
   z-index: 3;
   will-change: opacity;
   opacity: 0;
 }
 
-[data-beam="${id}"][data-active] [data-beam-bloom],
-[data-beam="${id}"][data-fading] [data-beam-bloom] {
+[data-beam="${key}"][data-active] [data-beam-bloom],
+[data-beam="${key}"][data-fading] [data-beam-bloom] {
   display: block;
-  opacity: calc(var(--beam-opacity-${id}) * ${sBloom} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-bloom-mul, 1) * var(--beam-bloom-opacity, 1) * var(--beam-strength, 1));
   ${bloomAnim}
 }
 
-@keyframes beam-fade-in-${id} { to { --beam-opacity-${id}: 1; } }
-@keyframes beam-fade-out-${id} { from { --beam-opacity-${id}: 1; } to { --beam-opacity-${id}: 0; } }
-${pausedAnimationsRule(id)}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-beam="${id}"][data-active],
-  [data-beam="${id}"][data-fading],
-  [data-beam="${id}"][data-active]::after,
-  [data-beam="${id}"][data-fading]::after,
-  [data-beam="${id}"][data-active]::before,
-  [data-beam="${id}"][data-fading]::before,
-  [data-beam="${id}"][data-active] [data-beam-bloom],
-  [data-beam="${id}"][data-fading] [data-beam-bloom] {
-    animation: none !important;
-  }
-}
 `;
 }
 
@@ -1730,94 +1703,77 @@ ${pausedAnimationsRule(id)}
  * the outward halo shows.
  */
 function generatePulseOuterVariantCSS(options: GenerateStylesOptions): string {
-  const {
-    id, borderRadius, duration,
-    strokeOpacity, innerOpacity, bloomOpacity,
-    colorVariant, staticColors, brightness, saturation, theme, tint,
-    hairlineOpacity = 0,
-  } = options;
+  const { colorVariant, staticColors, theme, tint } = options;
+  const key = beamCssKey(options);
 
   const isDark = theme === 'dark';
-
-  const monoMul = colorVariant === 'mono' ? 0.5 : 1.0;
-  const sStroke = (strokeOpacity * monoMul).toFixed(2);
-  const sInner = (innerOpacity * monoMul).toFixed(2);
-  const sBloom = (bloomOpacity * monoMul).toFixed(2);
 
   // A constant 1px hairline frames the element. It is painted on the inner 1px
   // ring of the border-box (same place a standard `inset 0 0 0 1px` component
   // border sits) so the beam hairline/stroke align with the wrapped element's
   // own hairline instead of floating 1px outside it.
   const hairRGB = isDark ? '70, 70, 70' : '0, 0, 0';
-  const hairOp = hairlineOpacity.toFixed(2);
-  const hairlineLine = `linear-gradient(rgba(${hairRGB}, ${hairOp}), rgba(${hairRGB}, ${hairOp}))`;
+  const hairlineLine = `linear-gradient(rgba(${hairRGB}, var(--beam-hairline-o, 0)), rgba(${hairRGB}, var(--beam-hairline-o, 0)))`;
 
   // Breathing parameters (theme-tuned). The motion is driven from JS now
   // (getPulseDriverConfig / pulseDriver.ts); only `op` is needed here for the
   // frozen bloom's average alpha.
-  const { op } = pulseParams('pulse-outside', theme, duration);
+  const { op } = pulseParams('pulse-outside', theme, 2.3);
 
   // Theme-dependent outward-glow constants (ported from v5 c6 defaults).
-  const sw = 0.95; // glow width size
-  const sh = 0.9; // glow height size (same in both themes)
+  // Glow scale 0.95 x 0.9 is baked into the transforms below (same in both themes).
   const glowBlur = isDark ? 3 : 6;
   const bloomBlur = isDark ? 22.5 : 15;
 
-  const b = brightness.toFixed(2);
-  const s = saturation.toFixed(2);
-
   // Slow hue drift is driven into --beam-hue-<id> by the JS loop (capped fps).
   const strokeAnim = staticColors
-    ? `filter: brightness(${b}) saturate(${s});`
-    : `filter: hue-rotate(var(--beam-hue-${id})) brightness(${b}) saturate(${s});`;
+    ? `filter: brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`
+    : `filter: hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue))) brightness(var(--beam-brightness, 1.3)) saturate(var(--beam-saturation, 1.2));`;
+  const glowFilter = `brightness(var(--beam-glow-brightness, var(--beam-brightness, 1.3))) saturate(var(--beam-glow-saturate, var(--beam-saturation, 1.2)))`;
   const coreAnim = staticColors
-    ? `filter: blur(${glowBlur}px) brightness(${b}) saturate(${s});`
-    : `filter: blur(${glowBlur}px) hue-rotate(var(--beam-hue-${id})) brightness(${b}) saturate(${s});`;
+    ? `filter: blur(var(--beam-core-blur, ${glowBlur}px)) ${glowFilter};`
+    : `filter: blur(var(--beam-core-blur, ${glowBlur}px)) hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue))) ${glowFilter};`;
   // Bloom (large halo) shares the SAME hue rotation as the core/stroke so the
   // wide glow and the tight glow stay in color sync (most visible on blue/green).
   // Its gradients keep frozen opacity, so only the cheap hue-rotate varies.
   const bloomAnim = staticColors
-    ? `filter: blur(${bloomBlur}px) brightness(${b}) saturate(${s});`
-    : `filter: blur(${bloomBlur}px) hue-rotate(var(--beam-hue-${id})) brightness(${b}) saturate(${s});`;
+    ? `filter: blur(var(--beam-bloom-blur, ${bloomBlur}px)) ${glowFilter};`
+    : `filter: blur(var(--beam-bloom-blur, ${bloomBlur}px)) hue-rotate(calc(var(--beam-hue-base, 0deg) + var(--beam-hue))) ${glowFilter};`;
 
-  const strokeGradients = pulseTableGradients(PULSE_OUTER_CORE, colorVariant, id, tint);
-  const coreGradients = pulseTableGradients(PULSE_OUTER_CORE, colorVariant, id, tint);
+  const strokeGradients = pulseTableGradients(PULSE_OUTER_CORE, colorVariant, tint);
+  const coreGradients = pulseTableGradients(PULSE_OUTER_CORE, colorVariant, tint);
   // Frozen at the breathing time-average (midpoint of the [1-op, 1] opacity range).
   const bloomGradients = pulseTableGradientsStatic(PULSE_OUTER_BLOOM, colorVariant, 1 - op * 0.5, tint);
   // Paint a static hairline in the SAME masked ring as the stroke glow so their
   // position and anti-aliasing always match exactly.
-  const strokeBackground = hairlineOpacity > 0
-    ? `${strokeGradients},
-    ${hairlineLine}`
-    : strokeGradients;
+  const strokeBackground = `${strokeGradients},
+    ${hairlineLine}`;
 
   return `
-${pulsePropertyRegs(id)}
-
-[data-beam="${id}"] {
+[data-beam="${key}"] {
   position: relative;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   overflow: visible;
   isolation: isolate;
 }
 
-[data-beam="${id}"][data-active] {
-${pulseWrapperAnimation(id, 'beam-fade-in', 0.6)}
+[data-beam="${key}"][data-active] {
+${pulseWrapperAnimation('beam-fade-in', 0.6)}
 }
 
-[data-beam="${id}"][data-fading] {
-${pulseWrapperAnimation(id, 'beam-fade-out', 0.5)}
+[data-beam="${key}"][data-fading] {
+${pulseWrapperAnimation('beam-fade-out', 0.5)}
 }
-${hairlineOpacity > 0 ? `
+
 /* Idle hairline — painted above the (opaque) child in the inner 1px edge ring so
    it overlaps a standard inset component border exactly. */
-[data-beam="${id}"]::after {
+[data-beam="${key}"]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   padding: 1px;
-  clip-path: inset(0 round ${borderRadius}px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${hairlineLine};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -1826,15 +1782,15 @@ ${hairlineOpacity > 0 ? `
   pointer-events: none;
   z-index: 2;
 }
-` : ''}
-[data-beam="${id}"][data-active]::after,
-[data-beam="${id}"][data-fading]::after {
+
+[data-beam="${key}"][data-active]::after,
+[data-beam="${key}"][data-fading]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   padding: 1px;
-  clip-path: inset(0 round ${borderRadius}px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${strokeBackground};
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -1843,212 +1799,121 @@ ${hairlineOpacity > 0 ? `
   pointer-events: none;
   z-index: 2;
   will-change: opacity, filter;
-  opacity: calc(var(--beam-opacity-${id}) * ${sStroke} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-stroke-mul, 1) * var(--beam-stroke-opacity, 1) * var(--beam-strength, 1));
   ${strokeAnim}
 }
 
-[data-beam="${id}"][data-active]::before,
-[data-beam="${id}"][data-fading]::before {
+[data-beam="${key}"][data-active]::before,
+[data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
   inset: -10px;
   z-index: -1;
-  border-radius: ${borderRadius + 10}px;
+  border-radius: calc(var(--beam-radius, 16px) + 10px);
   background: ${coreGradients};
-  transform: scale(${sw}, ${sh});
+  transform: scale(0.95, 0.9);
   pointer-events: none;
   will-change: opacity, filter;
-  opacity: calc(var(--beam-opacity-${id}) * ${sInner} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
   ${coreAnim}
 }
 
-[data-beam="${id}"] [data-beam-bloom] {
+[data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
   inset: -30px;
   z-index: -1;
-  border-radius: ${borderRadius + 30}px;
+  border-radius: calc(var(--beam-radius, 16px) + 30px);
   background: ${bloomGradients};
-  transform: scale(${sw}, ${sh});
+  transform: scale(0.95, 0.9);
   pointer-events: none;
   will-change: transform;
   opacity: 0;
 }
 
-[data-beam="${id}"][data-active] [data-beam-bloom],
-[data-beam="${id}"][data-fading] [data-beam-bloom] {
+[data-beam="${key}"][data-active] [data-beam-bloom],
+[data-beam="${key}"][data-fading] [data-beam-bloom] {
   display: block;
-  opacity: calc(var(--beam-opacity-${id}) * ${sBloom} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-bloom-mul, 1) * var(--beam-bloom-opacity, 1) * var(--beam-strength, 1));
   ${bloomAnim}
 }
 
-@keyframes beam-fade-in-${id} { to { --beam-opacity-${id}: 1; } }
-@keyframes beam-fade-out-${id} { from { --beam-opacity-${id}: 1; } to { --beam-opacity-${id}: 0; } }
-${pausedAnimationsRule(id)}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-beam="${id}"][data-active],
-  [data-beam="${id}"][data-fading],
-  [data-beam="${id}"][data-active]::after,
-  [data-beam="${id}"][data-fading]::after,
-  [data-beam="${id}"][data-active]::before,
-  [data-beam="${id}"][data-fading]::before,
-  [data-beam="${id}"][data-active] [data-beam-bloom],
-  [data-beam="${id}"][data-fading] [data-beam-bloom] {
-    animation: none !important;
-  }
-}
 `;
 }
 
 function generateLineVariantCSS(options: GenerateStylesOptions): string {
-  const {
-    id,
-    borderRadius,
-    borderWidth,
-    duration,
-    strokeOpacity,
-    innerOpacity,
-    bloomOpacity,
-    innerShadow,
-    colorVariant,
-    tint,
-    staticColors,
-    brightness,
-    saturation,
-    hueRange,
-    theme,
-  } = options;
+  const { colorVariant, tint, staticColors, theme } = options;
+  const key = beamCssKey(options);
 
-  const innerRadius = Math.max(0, borderRadius - borderWidth);
   const isDark = theme === 'dark';
-  
-  const finalStrokeOpacity = strokeOpacity;
-  const finalInnerOpacity = innerOpacity;
-  const finalBloomOpacity = bloomOpacity;
-  
-  const hueShiftAnimation = staticColors 
-    ? '' 
-    : `animation: beam-hue-shift-${id} 12s ease-in-out infinite;`;
+
+  const hueShiftAnimation = staticColors
+    ? ''
+    : `animation: beam-hue-shift 12s ease-in-out infinite;`;
 
   const hueShiftBloomAnimation = staticColors
     ? ''
-    : `animation: beam-hue-shift-bloom-${id} 8s ease-in-out infinite;`;
+    : `animation: beam-hue-shift-bloom 8s ease-in-out infinite;`;
   
-  const hueShiftKeyframes = staticColors ? '' : `
-@keyframes beam-hue-shift-${id} {
-  0% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  50% { filter: hue-rotate(${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  100% { filter: hue-rotate(-${hueRange}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-}
-
-@keyframes beam-hue-shift-bloom-${id} {
-  0% { filter: blur(8px) hue-rotate(-${hueRange + 10}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  50% { filter: blur(8px) hue-rotate(${hueRange + 10}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-  100% { filter: blur(8px) hue-rotate(-${hueRange + 10}deg) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)}); }
-}`;
-
   const whiteHighlight = isDark
     ? `radial-gradient(
-        ellipse calc(24px * var(--beam-w-${id})) calc(28px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) calc(100% + 2px),
+        ellipse calc(24px * var(--beam-w)) calc(28px * var(--beam-h)) at calc(var(--beam-x) * 100%) calc(100% + 2px),
         rgba(255, 255, 255, 0.38) 0%,
         rgba(255, 255, 255, 0.12) 30%,
         transparent 65%
       )`
     : `radial-gradient(
-        ellipse calc(35px * var(--beam-w-${id})) calc(28px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) calc(100% + 2px),
+        ellipse calc(35px * var(--beam-w)) calc(28px * var(--beam-h)) at calc(var(--beam-x) * 100%) calc(100% + 2px),
         rgba(0, 0, 0, 0.6) 0%,
         rgba(0, 0, 0, 0.25) 35%,
         transparent 70%
       )`;
 
-  const colorGradients = getLineColorGradients(colorVariant, isDark, id, tint);
-  const innerGradients = getLineInnerGradients(colorVariant, id, tint);
+  const colorGradients = getLineColorGradients(colorVariant, isDark, tint);
+  const innerGradients = getLineInnerGradients(colorVariant, tint);
 
-  const bloomGradients = getLineBloomGradients(colorVariant, isDark, id, tint);
+  const bloomGradients = getLineBloomGradients(colorVariant, isDark, tint);
   const monoBloomBlur = colorVariant === 'mono' ? 'filter: blur(6px);' : '';
 
   return `
-@property --beam-x-${id} {
-  syntax: "<number>";
-  initial-value: 0;
-  inherits: true;
-}
-
-@property --beam-w-${id} {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-@property --beam-h-${id} {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-@property --beam-spike-${id} {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-@property --beam-spike2-${id} {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-@property --beam-edge-${id} {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-@property --beam-opacity-${id} {
-  syntax: "<number>";
-  initial-value: 0;
-  inherits: true;
-}
-
-[data-beam="${id}"] {
+[data-beam="${key}"] {
   position: relative;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   overflow: hidden;
 }
 
-[data-beam="${id}"][data-active] {
+[data-beam="${key}"][data-active] {
   animation:
-    beam-travel-${id} ${duration}s linear infinite,
-    beam-edge-fade-${id} ${duration}s linear infinite,
-    beam-breathe-${id} ${(duration * 1.3).toFixed(1)}s ease-in-out infinite,
-    beam-spike-${id} ${(duration * 1.33).toFixed(1)}s ease-in-out infinite,
-    beam-spike2-${id} ${(duration * 1.7).toFixed(1)}s ease-in-out infinite,
-    beam-fade-in-${id} 0.6s ease forwards;
+    beam-travel var(--beam-duration, 3.1s) linear infinite,
+    beam-edge-fade var(--beam-duration, 3.1s) linear infinite,
+    beam-breathe calc(var(--beam-duration, 3.1s) * 1.3) ease-in-out infinite,
+    beam-spike calc(var(--beam-duration, 3.1s) * 1.33) ease-in-out infinite,
+    beam-spike2 calc(var(--beam-duration, 3.1s) * 1.7) ease-in-out infinite,
+    beam-fade-in 0.6s ease forwards;
 }
 
-[data-beam="${id}"][data-fading] {
+[data-beam="${key}"][data-fading] {
   animation:
-    beam-travel-${id} ${duration}s linear infinite,
-    beam-edge-fade-${id} ${duration}s linear infinite,
-    beam-breathe-${id} ${(duration * 1.3).toFixed(1)}s ease-in-out infinite,
-    beam-spike-${id} ${(duration * 1.33).toFixed(1)}s ease-in-out infinite,
-    beam-spike2-${id} ${(duration * 1.7).toFixed(1)}s ease-in-out infinite,
-    beam-fade-out-${id} 0.5s ease forwards;
+    beam-travel var(--beam-duration, 3.1s) linear infinite,
+    beam-edge-fade var(--beam-duration, 3.1s) linear infinite,
+    beam-breathe calc(var(--beam-duration, 3.1s) * 1.3) ease-in-out infinite,
+    beam-spike calc(var(--beam-duration, 3.1s) * 1.33) ease-in-out infinite,
+    beam-spike2 calc(var(--beam-duration, 3.1s) * 1.7) ease-in-out infinite,
+    beam-fade-out 0.5s ease forwards;
 }
 
-[data-beam="${id}"][data-active]::after,
-[data-beam="${id}"][data-fading]::after {
+[data-beam="${key}"][data-active]::after,
+[data-beam="${key}"][data-fading]::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  padding: ${borderWidth}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  padding: var(--beam-border-width, 1px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   background: ${whiteHighlight}, ${colorGradients};
   -webkit-mask:
     radial-gradient(
-      ellipse calc(78px * var(--beam-w-${id})) calc(60px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+      ellipse calc(78px * var(--beam-w)) calc(60px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
       white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%
     ),
     linear-gradient(#fff 0 0) content-box,
@@ -2056,7 +1921,7 @@ function generateLineVariantCSS(options: GenerateStylesOptions): string {
   -webkit-mask-composite: source-in, xor;
   mask:
     radial-gradient(
-      ellipse calc(78px * var(--beam-w-${id})) calc(60px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+      ellipse calc(78px * var(--beam-w)) calc(60px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
       white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%
     ),
     linear-gradient(#fff 0 0) content-box,
@@ -2064,21 +1929,21 @@ function generateLineVariantCSS(options: GenerateStylesOptions): string {
   mask-composite: intersect, exclude;
   pointer-events: none;
   z-index: 2;
-  opacity: calc(var(--beam-opacity-${id}) * var(--beam-edge-${id}) * ${finalStrokeOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-edge) * var(--beam-stroke-mul, 1) * var(--beam-stroke-opacity, 1) * var(--beam-strength, 1));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"][data-active]::before,
-[data-beam="${id}"][data-fading]::before {
+[data-beam="${key}"][data-active]::before,
+[data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: ${borderRadius}px;
+  border-radius: var(--beam-radius, 16px);
   background: ${innerGradients};
-  box-shadow: inset 0 0 9px 1px ${innerShadow};
+  box-shadow: inset 0 0 9px 1px var(--beam-inner-shadow, transparent);
   -webkit-mask-image:
     radial-gradient(
-      ellipse calc(78px * var(--beam-w-${id})) calc(60px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+      ellipse calc(78px * var(--beam-w)) calc(60px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
       white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%
     ),
     linear-gradient(white, transparent 28px, transparent calc(100% - 28px), white),
@@ -2086,7 +1951,7 @@ function generateLineVariantCSS(options: GenerateStylesOptions): string {
   -webkit-mask-composite: source-in, source-over;
   mask-image:
     radial-gradient(
-      ellipse calc(78px * var(--beam-w-${id})) calc(60px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+      ellipse calc(78px * var(--beam-w)) calc(60px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
       white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%
     ),
     linear-gradient(white, transparent 28px, transparent calc(100% - 28px), white),
@@ -2094,25 +1959,25 @@ function generateLineVariantCSS(options: GenerateStylesOptions): string {
   mask-composite: intersect, add;
   pointer-events: none;
   z-index: 1;
-  opacity: calc(var(--beam-opacity-${id}) * var(--beam-edge-${id}) * ${finalInnerOpacity.toFixed(2)} * var(--beam-strength, 1));
-  clip-path: inset(0 round ${borderRadius}px);
+  opacity: calc(var(--beam-opacity) * var(--beam-edge) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
+  clip-path: inset(0 round var(--beam-radius, 16px));
   ${hueShiftAnimation}
 }
 
-[data-beam="${id}"] [data-beam-bloom] {
+[data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
   inset: 0;
-  border-radius: ${innerRadius}px;
-  clip-path: inset(0 round ${borderRadius}px);
+  border-radius: var(--beam-inner-radius, 15px);
+  clip-path: inset(0 round var(--beam-radius, 16px));
   padding: 0;
   -webkit-mask: radial-gradient(
-    ellipse calc(84px * var(--beam-w-${id})) calc(110px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+    ellipse calc(84px * var(--beam-w)) calc(110px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
     white 0%, rgba(255, 255, 255, 0.5) 35%, transparent 100%
   );
   -webkit-mask-composite: source-over;
   mask: radial-gradient(
-    ellipse calc(84px * var(--beam-w-${id})) calc(110px * var(--beam-h-${id})) at calc(var(--beam-x-${id}) * 100%) 100%,
+    ellipse calc(84px * var(--beam-w)) calc(110px * var(--beam-h)) at calc(var(--beam-x) * 100%) 100%,
     white 0%, rgba(255, 255, 255, 0.5) 35%, transparent 100%
   );
   mask-composite: add;
@@ -2123,68 +1988,12 @@ function generateLineVariantCSS(options: GenerateStylesOptions): string {
   opacity: 0;
 }
 
-[data-beam="${id}"][data-active] [data-beam-bloom],
-[data-beam="${id}"][data-fading] [data-beam-bloom] {
+[data-beam="${key}"][data-active] [data-beam-bloom],
+[data-beam="${key}"][data-fading] [data-beam-bloom] {
   display: block;
-  opacity: calc(var(--beam-opacity-${id}) * var(--beam-edge-${id}) * ${finalBloomOpacity.toFixed(2)} * var(--beam-strength, 1));
+  opacity: calc(var(--beam-opacity) * var(--beam-edge) * var(--beam-bloom-mul, 1) * var(--beam-bloom-opacity, 1) * var(--beam-strength, 1));
   ${hueShiftBloomAnimation}
 }
 
-@keyframes beam-travel-${id} {
-  0%   { --beam-x-${id}: 0.06;  --beam-w-${id}: 0.5; }
-  10%  { --beam-x-${id}: 0.15;  --beam-w-${id}: 0.8; }
-  20%  { --beam-x-${id}: 0.25;  --beam-w-${id}: 1.1; }
-  30%  { --beam-x-${id}: 0.35;  --beam-w-${id}: 1.3; }
-  40%  { --beam-x-${id}: 0.44;  --beam-w-${id}: 1.45; }
-  50%  { --beam-x-${id}: 0.5;   --beam-w-${id}: 1.5; }
-  60%  { --beam-x-${id}: 0.56;  --beam-w-${id}: 1.45; }
-  70%  { --beam-x-${id}: 0.65;  --beam-w-${id}: 1.3; }
-  80%  { --beam-x-${id}: 0.75;  --beam-w-${id}: 1.1; }
-  90%  { --beam-x-${id}: 0.85;  --beam-w-${id}: 0.8; }
-  100% { --beam-x-${id}: 0.94;  --beam-w-${id}: 0.5; }
-}
-
-@keyframes beam-edge-fade-${id} {
-  0%    { --beam-edge-${id}: 0; }
-  12.5% { --beam-edge-${id}: 0; }
-  32.5% { --beam-edge-${id}: 1; }
-  67.5% { --beam-edge-${id}: 1; }
-  87.5% { --beam-edge-${id}: 0; }
-  100%  { --beam-edge-${id}: 0; }
-}
-
-@keyframes beam-breathe-${id} {
-  0%, 100% { --beam-h-${id}: 0.8; }
-  25%      { --beam-h-${id}: 1.25; }
-  55%      { --beam-h-${id}: 0.85; }
-  80%      { --beam-h-${id}: 1.3; }
-}
-
-@keyframes beam-spike-${id} {
-  0%   { --beam-spike-${id}: 0.8; }
-  25%  { --beam-spike-${id}: 1.3; }
-  50%  { --beam-spike-${id}: 0.9; }
-  75%  { --beam-spike-${id}: 1.4; }
-  100% { --beam-spike-${id}: 0.8; }
-}
-
-@keyframes beam-spike2-${id} {
-  0%   { --beam-spike2-${id}: 1.2; }
-  25%  { --beam-spike2-${id}: 0.7; }
-  50%  { --beam-spike2-${id}: 1.4; }
-  75%  { --beam-spike2-${id}: 0.8; }
-  100% { --beam-spike2-${id}: 1.2; }
-}
-
-@keyframes beam-fade-in-${id} {
-  to { --beam-opacity-${id}: 1; }
-}
-
-@keyframes beam-fade-out-${id} {
-  from { --beam-opacity-${id}: 1; }
-  to { --beam-opacity-${id}: 0; }
-}
-${hueShiftKeyframes}
-${pausedAnimationsRule(id)}
 `;
 }

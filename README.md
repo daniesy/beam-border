@@ -149,6 +149,37 @@ Control the overall intensity without affecting the wrapped content.
 
 `strength` accepts `0` to `1`. Internally, max strength is visually amplified so `1` reads clearly in real UI.
 
+## CSS tuning hooks
+
+Use CSS custom properties in the component's `style` attribute to tune generated layers without replacing their filters or animation logic.
+
+```vue
+<template>
+  <BorderBeam
+    size="pulse-outside"
+    :style="{
+      '--pulse-glow-boost': 1.2,
+      '--beam-core-blur': '8px',
+      '--beam-bloom-opacity': 0.7,
+    }"
+  >
+    <Card />
+  </BorderBeam>
+</template>
+```
+
+| Custom property | Default | Applies to | Description |
+| --------------- | ------- | ---------- | ----------- |
+| `--pulse-glow-boost` | `1` | Pulse variants | Relative multiplier for pulse glow reach |
+| `--beam-hue-base` | `0deg` | All variants | Base hue offset applied before animation |
+| `--beam-stroke-opacity` | `1` | All variants | Multiplier for the crisp beam stroke |
+| `--beam-inner-opacity` | `1` | All variants | Multiplier for the inner glow layer |
+| `--beam-bloom-opacity` | `1` | All variants | Multiplier for the outer bloom layer |
+| `--beam-core-blur` | theme preset | `pulse-outside` | Blur radius for the outward core glow |
+| `--beam-bloom-blur` | theme preset | `pulse-outside` | Blur radius for the outward halo |
+| `--beam-glow-brightness` | resolved brightness | `pulse-outside` | Brightness for core and halo filters |
+| `--beam-glow-saturate` | resolved saturation | `pulse-outside` | Saturation for core and halo filters |
+
 ## Play and pause
 
 ```vue
@@ -205,7 +236,11 @@ All standard fallthrough attributes are forwarded to the wrapper element. That i
 
 The effect layers are absolutely positioned and use `pointer-events: none`, so they do not block interaction with your slot content.
 
+Styles are injected into `document.head` as shared, reference-counted stylesheets: one static base sheet (keyframes and `@property` registrations) plus one sheet per configuration (size × theme × color variant × static colors × tint). Any number of beams with the same configuration share a single `<style>` element, and per-instance values (radius, duration, opacity, brightness, hue range, …) flow in through CSS custom properties set inline on the wrapper — no `<style>` elements are rendered in your markup.
+
 Rotate and line modes animate with CSS custom properties and keyframes. Pulse modes use a shared, frame-rate-capped `requestAnimationFrame` driver exposed through Vue composables, so multiple instances share one loop and can pause when inactive, offscreen, or reduced motion is preferred.
+
+> **SSR note:** stylesheets attach on the client (module code guards on `document`), so server-rendered markup paints the beam once the app hydrates.
 
 ## Project structure
 
@@ -249,16 +284,16 @@ npm run dev
 
 ## Publishing to npm with GitHub Actions
 
-This repo includes `.github/workflows/publish.yml`. It uses GitHub Actions and npm Trusted Publishing, with no paid third-party publishing service and no long-lived npm publish token.
+This repo includes `.github/workflows/publish.yml`. It uses GitHub Actions and npm directly, with no paid third-party publishing service.
 
 To publish:
 
-1. In npm, configure Trusted Publishing for this package.
-2. Set the trusted publisher to this GitHub repository and the `publish.yml` workflow filename.
+1. Create an npm automation token.
+2. Add it to your GitHub repository secrets as `NPM_TOKEN`.
 3. Make sure `package.json` has the package name and version you want to publish.
 4. Publish a GitHub release, or run the workflow manually from the Actions tab.
 
-The workflow runs `npm ci`, `npm run typecheck`, `npm run test`, `npm run build`, then `npm publish --access public`. npm automatically generates provenance when publishing from GitHub Actions through Trusted Publishing.
+The workflow runs `npm ci`, `npm run typecheck`, `npm run test`, `npm run build`, then `npm publish --access public --provenance`.
 
 ## Attribution
 

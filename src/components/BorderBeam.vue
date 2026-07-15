@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, useAttrs, useId, useTemplateRef } from 'vue'
+import { computed, useAttrs, useTemplateRef } from 'vue'
 import type { StyleValue } from 'vue'
 import { useBeamActivity } from '../composables/useBeamActivity'
 import { useBeamStyles } from '../composables/useBeamStyles'
+import { useBeamStylesheet } from '../composables/useBeamStylesheet'
 import { useDetectedBorderRadius } from '../composables/useDetectedBorderRadius'
 import { useElementVisibility } from '../composables/useElementVisibility'
 import { usePulseDriver } from '../composables/usePulseDriver'
@@ -32,7 +33,6 @@ const emit = defineEmits<{
 
 const attrs = useAttrs()
 const wrapperRef = useTemplateRef<HTMLElement>('wrapper')
-const id = `beam-${useId().replace(/[^a-zA-Z0-9_-]/g, '-')}`
 const systemTheme = useSystemTheme()
 const resolvedTheme = computed(() => (props.theme === 'auto' ? systemTheme.value : props.theme))
 const size = computed(() => props.size)
@@ -41,12 +41,14 @@ const detectedRadius = useDetectedBorderRadius(wrapperRef, customBorderRadius)
 const isVisible = useElementVisibility(wrapperRef)
 const pulseGlowScale = usePulseGlowScale(wrapperRef, size)
 const beamStyles = useBeamStyles({
-  id,
   props,
   detectedRadius,
   resolvedTheme,
   pulseGlowScale,
 })
+const beamKey = beamStyles.cssKey
+
+useBeamStylesheet(beamStyles.cssKey, beamStyles.cssStyles)
 
 const { isActive, isFading, handleAnimationEnd } = useBeamActivity({
   active: computed(() => props.active),
@@ -66,13 +68,12 @@ const mergedStyle = computed<StyleValue>(() => [attrs.style as StyleValue, beamS
 </script>
 
 <template>
-  <component :is="'style'" v-text="beamStyles.cssStyles.value" />
   <div
     v-bind="forwardedAttrs"
     ref="wrapper"
     :class="attrs.class"
     :style="mergedStyle"
-    :data-beam="id"
+    :data-beam="beamKey"
     :data-active="isActive && !isFading ? '' : undefined"
     :data-fading="isFading ? '' : undefined"
     :data-paused="isActive && !isFading && !isVisible ? '' : undefined"
