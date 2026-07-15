@@ -4,7 +4,7 @@
     "name": "Dan Florian",
     "email": "hello@danutflorian.com"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vue 3 port of border-beam animated border glow effect",
   "type": "module",
   "main": "dist/index.cjs",
@@ -24,6 +24,10 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniesy/beam-border.git"
   },
   "sideEffects": false,
   "scripts": {
