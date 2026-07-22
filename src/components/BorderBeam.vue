@@ -5,6 +5,7 @@ import { useBeamActivity } from '../composables/useBeamActivity'
 import { useBeamStyles } from '../composables/useBeamStyles'
 import { useBeamStylesheet } from '../composables/useBeamStylesheet'
 import { useDetectedBorderRadius } from '../composables/useDetectedBorderRadius'
+import { useDetectedCornerShape } from '../composables/useDetectedCornerShape'
 import { useElementVisibility } from '../composables/useElementVisibility'
 import { usePulseDriver } from '../composables/usePulseDriver'
 import { usePulseGlowScale } from '../composables/usePulseGlowScale'
@@ -38,11 +39,14 @@ const resolvedTheme = computed(() => (props.theme === 'auto' ? systemTheme.value
 const size = computed(() => props.size)
 const customBorderRadius = computed(() => props.borderRadius)
 const detectedRadius = useDetectedBorderRadius(wrapperRef, customBorderRadius)
+const customCornerShape = computed(() => props.cornerShape)
+const detectedCornerShape = useDetectedCornerShape(wrapperRef, customCornerShape)
 const isVisible = useElementVisibility(wrapperRef)
 const pulseGlowScale = usePulseGlowScale(wrapperRef, size)
 const beamStyles = useBeamStyles({
   props,
   detectedRadius,
+  detectedCornerShape,
   resolvedTheme,
   pulseGlowScale,
 })

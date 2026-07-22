@@ -139,4 +139,47 @@ describe('useBeamStyles', () => {
     expect(beam.cssStyles.value).not.toContain('data-beam-aura')
     expect(beam.cssStyles.value).not.toContain('beam-aura-drift')
   })
+
+  it('applies squircle corner geometry to the key and generated CSS', () => {
+    const props = {
+      size: 'pulse-outside',
+      colorVariant: 'mono',
+      theme: 'light',
+      active: true,
+      staticColors: false,
+      hueRange: 30,
+      strength: 1,
+    } as const
+
+    const detectedRadius = shallowRef(30)
+    const detectedCornerShape = shallowRef<'squircle' | 'round' | null>('squircle')
+    const resolvedTheme = computed(() => 'light' as const)
+    const pulseGlowScale = computed(() => ({ x: 1, y: 1 }))
+
+    const beam = useBeamStyles({
+      props,
+      detectedRadius,
+      detectedCornerShape,
+      resolvedTheme,
+      pulseGlowScale,
+    })
+
+    expect(beam.cssKey.value).toBe('pulse-outside_light_mono_static_squircle')
+    expect(beam.cssStyles.value).toContain('corner-shape: squircle;')
+    // Rounded clip-paths would shave the squircle shoulders — they must be
+    // relaxed to plain insets in squircle mode.
+    expect(beam.cssStyles.value).not.toContain('clip-path: inset(0 round')
+
+    // An explicit prop overrides detection back to rounded rendering.
+    const overridden = useBeamStyles({
+      props: { ...props, cornerShape: 'round' },
+      detectedRadius,
+      detectedCornerShape,
+      resolvedTheme,
+      pulseGlowScale,
+    })
+    expect(overridden.cssKey.value).toBe('pulse-outside_light_mono_static')
+    expect(overridden.cssStyles.value).not.toContain('corner-shape: squircle;')
+  })
+
 })

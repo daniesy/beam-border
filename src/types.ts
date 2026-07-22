@@ -16,6 +16,13 @@ export type BorderBeamTheme = 'dark' | 'light' | 'auto'
 export type BorderBeamColorVariant = 'colorful' | 'mono' | 'ocean' | 'sunset'
 
 /**
+ * Corner geometry for the beam layers. `squircle` follows the CSS
+ * `corner-shape: squircle` superellipse (Chromium's experimental property);
+ * browsers without support fall back to the rounded-rect rendering.
+ */
+export type BorderBeamCornerShape = 'round' | 'squircle'
+
+/**
  * Configuration for a size preset.
  */
 export interface SizeConfig {
@@ -75,6 +82,13 @@ export interface BorderBeamProps {
    * first slotted element's border radius and falls back to the size preset.
    */
   borderRadius?: number
+  /**
+   * Corner geometry for the beam layers. When omitted, the wrapper detects
+   * the first slotted element's `corner-shape` so squircle children get a
+   * squircle beam automatically.
+   * @default detected, falling back to 'round'
+   */
+  cornerShape?: BorderBeamCornerShape
   /**
    * Brightness multiplier for the glow effect.
    */

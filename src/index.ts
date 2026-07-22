@@ -3,6 +3,7 @@ export { default } from './components/BorderBeam.vue'
 export type {
   BeamStyle,
   BorderBeamColorVariant,
+  BorderBeamCornerShape,
   BorderBeamProps,
   BorderBeamSize,
   BorderBeamTheme,

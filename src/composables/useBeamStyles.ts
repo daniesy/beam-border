@@ -1,10 +1,11 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import { beamCssKey, generateBeamCSS, getPulseDriverConfig, sizePresets, sizeThemePresets } from '../styles'
-import type { BeamStyle, BorderBeamProps, BorderBeamTheme } from '../types'
+import type { BeamStyle, BorderBeamCornerShape, BorderBeamProps, BorderBeamTheme } from '../types'
 
 interface UseBeamStylesOptions {
   props: Readonly<BorderBeamProps>
   detectedRadius: Ref<number | null>
+  detectedCornerShape?: Ref<BorderBeamCornerShape | null>
   resolvedTheme: ComputedRef<Exclude<BorderBeamTheme, 'auto'>>
   pulseGlowScale: ComputedRef<{ x: number; y: number }>
 }
@@ -27,6 +28,9 @@ export function useBeamStyles(options: UseBeamStylesOptions) {
   const finalBorderRadius = computed(
     () => options.props.borderRadius ?? options.detectedRadius.value ?? sizeConfig.value.borderRadius,
   )
+  const finalCornerShape = computed<BorderBeamCornerShape>(
+    () => options.props.cornerShape ?? options.detectedCornerShape?.value ?? 'round',
+  )
   const finalDuration = computed(() => options.props.duration ?? (size.value === 'line' ? 3.1 : isPulse.value ? 2.3 : 1.96))
   const finalSaturation = computed(() => options.props.saturation ?? themeConfig.value.saturation)
   const finalBrightness = computed(() => options.props.brightness ?? themeConfig.value.brightness ?? 1.3)
@@ -43,6 +47,7 @@ export function useBeamStyles(options: UseBeamStylesOptions) {
       staticColors: finalStaticColors.value,
       theme: options.resolvedTheme.value,
       tint: tint.value,
+      cornerShape: finalCornerShape.value,
     }),
   )
 
@@ -53,6 +58,7 @@ export function useBeamStyles(options: UseBeamStylesOptions) {
       staticColors: finalStaticColors.value,
       theme: options.resolvedTheme.value,
       tint: tint.value,
+      cornerShape: finalCornerShape.value,
     }),
   )
 

@@ -1,4 +1,4 @@
-import type { SizeConfig, ThemeColors, BorderBeamColorVariant, BorderBeamSize } from './types';
+import type { SizeConfig, ThemeColors, BorderBeamColorVariant, BorderBeamCornerShape, BorderBeamSize } from './types';
 
 /**
  * Size presets for border radius and dimensions
@@ -1035,6 +1035,7 @@ export function beamCssKey(options: GenerateStylesOptions): string {
     options.staticColors ? 'static' : 'anim',
   ];
   if (options.tint) parts.push(`tint-${hashString(options.tint)}`);
+  if (options.cornerShape === 'squircle') parts.push('squircle');
   return parts.join('_');
 }
 
@@ -1162,6 +1163,8 @@ export interface GenerateStylesOptions {
   theme: 'dark' | 'light';
   /** Custom single-color tint for all generated beam gradients. */
   tint?: string;
+  /** Corner geometry for every beam layer. Defaults to rounded rects. */
+  cornerShape?: BorderBeamCornerShape;
 }
 
 /**
@@ -1174,23 +1177,48 @@ export interface GenerateStylesOptions {
 export function generateBeamCSS(options: GenerateStylesOptions): string {
   const { size } = options;
 
+  let css: string;
   if (size === 'line') {
-    return generateLineVariantCSS(options);
+    css = generateLineVariantCSS(options);
+  } else if (size === 'sm') {
+    css = generateSmallVariantCSS(options);
+  } else if (size === 'pulse-inner') {
+    css = generatePulseInnerVariantCSS(options);
+  } else if (size === 'pulse-outside') {
+    css = generatePulseOuterVariantCSS(options);
+  } else {
+    css = generateBorderVariantCSS(options);
   }
 
-  if (size === 'sm') {
-    return generateSmallVariantCSS(options);
+  if (options.cornerShape === 'squircle') {
+    css = applySquircleCorners(css);
   }
 
-  if (size === 'pulse-inner') {
-    return generatePulseInnerVariantCSS(options);
-  }
+  return css;
+}
 
-  if (size === 'pulse-outside') {
-    return generatePulseOuterVariantCSS(options);
-  }
-
-  return generateBorderVariantCSS(options);
+/**
+ * Rewrite a variant's CSS for `corner-shape: squircle` children:
+ * every rounded layer gains the squircle corner geometry, and the rounded
+ * clip-paths are relaxed to plain insets — `clip-path: inset(.. round ..)`
+ * always clips a rounded RECT, which would shave the squircle's wider
+ * shoulders; the layers' own border-radius (+ corner-shape) already bounds
+ * the painted area, so the plain inset only needs to contain blur overflow.
+ */
+function applySquircleCorners(css: string): string {
+  return css
+    .replaceAll(
+      // `/* keep-round */` marks layers whose shape comes from a ring MASK
+      // plus blur (the outward glow layers): Chromium renders corner-shape:
+      // squircle on those as square corners, and after a 7-16px blur a
+      // rounded rect is indistinguishable from a squircle anyway.
+      /border-radius: ([^;]+);(?! \/\* keep-round)/g,
+      'border-radius: $1;\n  corner-shape: squircle;',
+    )
+    .replaceAll(
+      /clip-path: inset\(0 round [^;]+\);/g,
+      'clip-path: inset(0);',
+    );
 }
 
 function generateSmallVariantCSS(options: GenerateStylesOptions): string {
@@ -1807,11 +1835,11 @@ ${pulseWrapperAnimation('beam-fade-out', 0.5)}
 [data-beam="${key}"][data-fading]::before {
   content: "";
   position: absolute;
-  inset: -10px;
+  inset: var(--beam-core-inset, -10px);
   z-index: -1;
-  border-radius: calc(var(--beam-radius, 16px) + 10px);
+  border-radius: calc(var(--beam-radius, 16px) - var(--beam-core-inset, -10px));
   background: ${coreGradients};
-  transform: scale(0.95, 0.9);
+  transform: scale(var(--pulse-glow-shrink-x, 0.95), var(--pulse-glow-shrink-y, 0.9));
   pointer-events: none;
   will-change: opacity, filter;
   opacity: calc(var(--beam-opacity) * var(--beam-inner-mul, 1) * var(--beam-inner-opacity, 1) * var(--beam-strength, 1));
@@ -1821,11 +1849,11 @@ ${pulseWrapperAnimation('beam-fade-out', 0.5)}
 [data-beam="${key}"] [data-beam-bloom] {
   display: none;
   position: absolute;
-  inset: -30px;
+  inset: var(--beam-bloom-inset, -30px);
   z-index: -1;
-  border-radius: calc(var(--beam-radius, 16px) + 30px);
+  border-radius: calc(var(--beam-radius, 16px) - var(--beam-bloom-inset, -30px));
   background: ${bloomGradients};
-  transform: scale(0.95, 0.9);
+  transform: scale(var(--pulse-glow-shrink-x, 0.95), var(--pulse-glow-shrink-y, 0.9));
   pointer-events: none;
   will-change: transform;
   opacity: 0;

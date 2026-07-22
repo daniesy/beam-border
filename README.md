@@ -121,6 +121,20 @@ Use `tint` when you want the original motion geometry with one custom color.
 
 When `tint` is provided, colors are treated as static so the custom color stays stable.
 
+## Corner shape
+
+Squircle children (CSS `corner-shape: squircle`) get a squircle beam automatically — the wrapper detects the first slotted element's corner shape the same way it detects `border-radius`. Pass the prop to override detection:
+
+```vue
+<template>
+  <BorderBeam size="pulse-outside" corner-shape="squircle">
+    <button class="squircle-button">Save</button>
+  </BorderBeam>
+</template>
+```
+
+Browsers without `corner-shape` support ignore the extra geometry and render the usual rounded rect.
+
 ## Theme
 
 ```vue
@@ -179,6 +193,9 @@ Use CSS custom properties in the component's `style` attribute to tune generated
 | `--beam-bloom-blur` | theme preset | `pulse-outside` | Blur radius for the outward halo |
 | `--beam-glow-brightness` | resolved brightness | `pulse-outside` | Brightness for core and halo filters |
 | `--beam-glow-saturate` | resolved saturation | `pulse-outside` | Saturation for core and halo filters |
+| `--beam-core-inset` | `-10px` | `pulse-outside` | How far the core glow extends past the element |
+| `--beam-bloom-inset` | `-30px` | `pulse-outside` | How far the halo extends past the element |
+| `--pulse-glow-shrink-x` / `--pulse-glow-shrink-y` | `0.95` / `0.9` | `pulse-outside` | Resting shrink of the outward layers (set to `1` for small elements like buttons) |
 
 ## Play and pause
 
@@ -210,6 +227,7 @@ The component fades in and out smoothly when `active` changes. It also pauses an
 | `duration`                       | `number`                                                     | per size       | Animation cycle duration in seconds |
 | `active`                         | `boolean`                                                    | `true`         | Whether the animation is active     |
 | `borderRadius` / `border-radius` | `number`                                                     | auto-detected  | Custom border radius in px          |
+| `cornerShape` / `corner-shape`   | `'round' \| 'squircle'`                                      | auto-detected  | Corner geometry of the beam layers  |
 | `brightness`                     | `number`                                                     | per size/theme | Glow brightness multiplier          |
 | `saturation`                     | `number`                                                     | per size/theme | Glow saturation multiplier          |
 | `hueRange` / `hue-range`         | `number`                                                     | `30`           | Hue rotation range in degrees       |
