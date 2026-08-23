@@ -121,6 +121,24 @@ Use `tint` when you want the original motion geometry with one custom color.
 
 When `tint` is provided, colors are treated as static so the custom color stays stable.
 
+## Palette hooks (re-branding `colorful`)
+
+Every colour the `colorful` variant paints — across all size presets and layers — belongs to one of nine hue families, each exposed as a CSS custom property with the original colour as fallback. Define any of them (globally or per instance) to re-theme the whole effect to your brand palette; unset hooks keep the stock colours.
+
+```css
+:root {
+  --beam-color-pink: #ff3366;
+  --beam-color-blue: #3366ff;
+  --beam-color-green: #33cc66;
+  --beam-color-purple: #8e44ad;
+  --beam-color-orange: #ff804d;
+}
+```
+
+The full list (also exported as `colorfulPaletteHooks`): `--beam-color-pink`, `--beam-color-red`, `--beam-color-blue`, `--beam-color-green`, `--beam-color-teal`, `--beam-color-purple`, `--beam-color-violet`, `--beam-color-magenta`, `--beam-color-orange`.
+
+Darker light-mode/spike shades of a hue follow the same hook, so one variable re-colours the family everywhere. Hooks apply only to `colorful`; `mono`, `ocean`, `sunset` and `tint` are unaffected.
+
 ## Corner shape
 
 Squircle children (CSS `corner-shape: squircle`) get a squircle beam automatically — the wrapper detects the first slotted element's corner shape the same way it detects `border-radius`. Pass the prop to override detection:

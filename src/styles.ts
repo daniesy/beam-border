@@ -1174,6 +1174,96 @@ export interface GenerateStylesOptions {
  * CSS custom properties that the component sets inline on its wrapper, so all
  * instances with the same configuration share this stylesheet verbatim.
  */
+/* ──────────────────────────────────────────────────────────────────────────
+ * Palette hooks — re-theme the `colorful` variant from CSS.
+ *
+ * Every colour the colorful palette paints (across ALL size presets: ring,
+ * inner glow, bloom, spikes, line trail) belongs to one of nine hue
+ * families. The generated CSS references each family through a CSS custom
+ * property with the original colour as fallback, so by default nothing
+ * changes, and a consumer can re-brand the whole effect by defining:
+ *
+ *   :root {
+ *     --beam-color-pink:    #ff3366;
+ *     --beam-color-blue:    #3366ff;
+ *     --beam-color-green:   #33cc66;
+ *     ...
+ *   }
+ *
+ * Families: pink, red, blue, green, teal, purple, violet, magenta, orange.
+ * Darker light-mode/spike shades of a hue map to the SAME hook, so one
+ * variable re-colours the family everywhere. Alpha'd occurrences are emitted
+ * as `color-mix(... calc(<alpha> * 100%), transparent)`, which renders
+ * identically to the original `rgba()` while inheriting the hook colour.
+ * ──────────────────────────────────────────────────────────────────────────*/
+
+/** The nine CSS hooks (as `--beam-color-<name>`) the colorful palette exposes. */
+export const colorfulPaletteHooks = [
+  'pink',
+  'red',
+  'blue',
+  'green',
+  'teal',
+  'purple',
+  'violet',
+  'magenta',
+  'orange',
+] as const;
+
+// Every rgb triple the colorful tables emit, mapped to its hue family.
+// (Triples are written exactly as they appear in the generated CSS.)
+const COLORFUL_HOOK_TRIPLES: [triple: string, hook: (typeof colorfulPaletteHooks)[number]][] = [
+  ['255, 50, 100', 'pink'],
+  ['200, 30, 60', 'pink'],
+  ['255, 60, 80', 'red'],
+  ['40, 140, 255', 'blue'],
+  ['30, 100, 200', 'blue'],
+  ['50, 200, 80', 'green'],
+  ['50, 200, 100', 'green'],
+  ['30, 160, 70', 'green'],
+  ['30, 185, 170', 'teal'],
+  ['40, 190, 180', 'teal'],
+  ['20, 150, 140', 'teal'],
+  ['40, 180, 220', 'teal'],
+  ['100, 70, 255', 'purple'],
+  ['80, 50, 200', 'purple'],
+  ['180, 40, 240', 'violet'],
+  ['200, 50, 240', 'violet'],
+  ['160, 30, 190', 'violet'],
+  ['240, 50, 180', 'magenta'],
+  ['255, 120, 40', 'orange'],
+  ['255, 160, 30', 'orange'],
+  ['255, 170, 40', 'orange'],
+  ['210, 130, 0', 'orange'],
+];
+
+/**
+ * Post-process a colorful variant's generated CSS, routing every palette
+ * colour through its `--beam-color-<family>` hook. Runs on the FINAL string
+ * (not the palette tables) because several generators parse `rgb(...)`
+ * literals with regexes (withAlpha/withAlphaVar/attenuateSpike) that a
+ * `var()` in the tables would break. Alpha expressions present in the output
+ * are either numeric (`0.3`) or a custom property (`var(--beam-bop-tl)`) —
+ * both are folded into the color-mix percentage.
+ */
+export function applyColorfulPaletteHooks(css: string): string {
+  for (const [triple, hook] of COLORFUL_HOOK_TRIPLES) {
+    const fallback = `rgb(${triple})`;
+    const hooked = `var(--beam-color-${hook}, ${fallback})`;
+    css = css.replaceAll(fallback, hooked);
+    const rgba = new RegExp(
+      String.raw`rgba\(${triple.replaceAll(', ', String.raw`,\s*`)},\s*([\d.]+|var\(--[\w-]+\))\s*\)`,
+      'g',
+    );
+    css = css.replace(
+      rgba,
+      (_, alpha: string) =>
+        `color-mix(in srgb, ${hooked} calc(${alpha} * 100%), transparent)`,
+    );
+  }
+  return css;
+}
+
 export function generateBeamCSS(options: GenerateStylesOptions): string {
   const { size } = options;
 
@@ -1188,6 +1278,10 @@ export function generateBeamCSS(options: GenerateStylesOptions): string {
     css = generatePulseOuterVariantCSS(options);
   } else {
     css = generateBorderVariantCSS(options);
+  }
+
+  if (options.colorVariant === 'colorful') {
+    css = applyColorfulPaletteHooks(css);
   }
 
   if (options.cornerShape === 'squircle') {
