@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorfulPaletteHooks, generateBeamCSS } from '../src/styles';
+import { applyColorfulPaletteHooks, colorfulPaletteHooks, generateBeamCSS } from '../src/styles';
 import type { GenerateStylesOptions } from '../src/styles';
 import type { BorderBeamSize } from '../src/types';
 
@@ -59,9 +59,17 @@ describe('colorful palette hooks', () => {
     );
   });
 
-  it('folds the breathing opacity custom properties into the color-mix percentage', () => {
+  it('folds a custom-property alpha into the color-mix percentage', () => {
+    // (No generated variant emits a var() alpha any more — the pulse breathing
+    // animates element opacity — but the hook rewrite still supports it.)
+    expect(applyColorfulPaletteHooks('rgba(255, 50, 100, var(--alpha))')).toBe(
+      'color-mix(in srgb, var(--beam-color-pink, rgb(255, 50, 100)) calc(var(--alpha) * 100%), transparent)',
+    );
+  });
+
+  it('hooks the full-alpha blob fills of the compositor pulse layers', () => {
     const out = css();
-    expect(out).toContain('calc(var(--beam-bop-');
+    expect(out).toContain('radial-gradient(closest-side, var(--beam-color-pink, rgb(255, 50, 100)), transparent)');
   });
 
   it('leaves the other variants untouched', () => {

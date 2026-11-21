@@ -1,5 +1,5 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
-import { beamCssKey, generateBeamCSS, getPulseDriverConfig, sizePresets, sizeThemePresets } from '../styles'
+import { beamCssKey, generateBeamCSS, pulseLayerSpecs, sizePresets, sizeThemePresets } from '../styles'
 import type { BeamStyle, BorderBeamCornerShape, BorderBeamProps, BorderBeamTheme } from '../types'
 
 interface UseBeamStylesOptions {
@@ -62,17 +62,9 @@ export function useBeamStyles(options: UseBeamStylesOptions) {
     }),
   )
 
-  const driverConfig = computed(() =>
-    isPulse.value
-      ? getPulseDriverConfig(
-          size.value,
-          options.resolvedTheme.value,
-          finalDuration.value,
-          finalHueRange.value,
-          finalStaticColors.value,
-        )
-      : null,
-  )
+  // The extra layer elements the pulse variants render (null otherwise); the
+  // breathing itself runs as compositor CSS animations on them.
+  const pulseLayers = computed(() => pulseLayerSpecs(size.value))
 
   // Everything per-instance flows into the shared CSS through these custom
   // properties, set inline on the wrapper element.
@@ -115,7 +107,7 @@ export function useBeamStyles(options: UseBeamStylesOptions) {
     finalStaticColors,
     cssKey,
     cssStyles,
-    driverConfig,
+    pulseLayers,
     wrapperStyle,
   }
 }

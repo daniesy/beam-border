@@ -270,11 +270,13 @@ All standard fallthrough attributes are forwarded to the wrapper element. That i
 - `::before`: the inner glow layer
 - `[data-beam-bloom]`: the outer bloom/glow child
 
+The pulse variants render their breathing layers as elements instead of pseudo-elements: `[data-beam-layer="inner"]` and `[data-beam-layer="ring"]` for `pulse-inner`, `[data-beam-layer="core"]` and `[data-beam-layer="stroke"]` for `pulse-outside` (all `aria-hidden`). Each holds one `[data-beam-blob]` element per glow gradient.
+
 The effect layers are absolutely positioned and use `pointer-events: none`, so they do not block interaction with your slot content.
 
 Styles are injected into `document.head` as shared, reference-counted stylesheets: one static base sheet (keyframes and `@property` registrations) plus one sheet per configuration (size × theme × color variant × static colors × tint). Any number of beams with the same configuration share a single `<style>` element, and per-instance values (radius, duration, opacity, brightness, hue range, …) flow in through CSS custom properties set inline on the wrapper — no `<style>` elements are rendered in your markup.
 
-Rotate and line modes animate with CSS custom properties and keyframes. Pulse modes use a shared, frame-rate-capped `requestAnimationFrame` driver exposed through Vue composables, so multiple instances share one loop and can pause when inactive, offscreen, or reduced motion is preferred.
+Rotate and line modes animate with CSS custom properties and keyframes. Pulse modes run entirely on the browser's compositor: every glow gradient is painted once, in its own blob element, and the breathing is CSS keyframes on `opacity`, `translate`, `scale` and `transform` (the per-blob alpha, drift and size), plus a colour `filter` animation for the hue drift. No JavaScript runs and nothing is repainted per frame, so the motion stays smooth at the display's refresh rate. The animations pause offscreen and stop under `prefers-reduced-motion`.
 
 > **SSR note:** stylesheets attach on the client (module code guards on `document`), so server-rendered markup paints the beam once the app hydrates.
 
@@ -286,7 +288,6 @@ beam-border/
 │   ├── index.ts
 │   ├── components/BorderBeam.vue
 │   ├── composables/
-│   ├── pulseDriver.ts
 │   ├── styles.ts
 │   └── types.ts
 ├── tests/

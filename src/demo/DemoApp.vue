@@ -96,5 +96,20 @@ const variants: BorderBeamColorVariant[] = ['colorful', 'mono', 'ocean', 'sunset
         </article>
       </BorderBeam>
     </section>
+
+    <section class="demo__examples" aria-label="Pulse examples">
+      <BorderBeam size="pulse-inner" :active="active" :color-variant="colorVariant" :theme="theme" data-demo="cta">
+        <button class="demo__cta" type="button">Start simulation</button>
+      </BorderBeam>
+      <BorderBeam size="pulse-inner" :active="active" :color-variant="colorVariant" :theme="theme" data-demo="cta-squircle">
+        <button class="demo__cta demo__cta--squircle" type="button">Squircle button</button>
+      </BorderBeam>
+      <BorderBeam size="pulse-outside" :active="active" :color-variant="colorVariant" :theme="theme" data-demo="alert">
+        <div class="demo__alert">
+          <strong>Campaign ready</strong>
+          <p>Pulse outside on a compact card.</p>
+        </div>
+      </BorderBeam>
+    </section>
   </main>
 </template>

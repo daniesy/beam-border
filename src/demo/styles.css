@@ -138,3 +138,48 @@ input {
   color: rgb(148 154 170);
   line-height: 1.5;
 }
+
+.demo__examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+  justify-content: center;
+  max-width: 1120px;
+  margin: 56px auto 0;
+}
+
+.demo__cta {
+  min-height: 40px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  background: #1f5fd6;
+  cursor: pointer;
+}
+
+.demo__cta--squircle {
+  border-radius: 16px;
+  corner-shape: squircle;
+}
+
+.demo__alert {
+  display: grid;
+  gap: 4px;
+  width: min(340px, calc(100vw - 64px));
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgb(20 22 30);
+  box-shadow: inset 0 0 0 1px rgb(128 128 142 / 30%);
+}
+
+.demo--light .demo__alert {
+  background: #fff;
+}
+
+.demo__alert p {
+  margin: 0;
+  color: rgb(148 154 170);
+}

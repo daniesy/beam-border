@@ -1,6 +1,37 @@
 import { nextTick, onMounted, onUnmounted, shallowRef, watch, type Ref } from 'vue'
 import type { BorderBeamCornerShape } from '../types'
 
+// Physical per-corner longhands, read when the shorthand serialises to ''
+// (e.g. because the corners differ). Top-left wins, like border-radius
+// detection, which reads borderTopLeftRadius.
+const CORNER_LONGHANDS = [
+  'corner-top-left-shape',
+  'corner-top-right-shape',
+  'corner-bottom-right-shape',
+  'corner-bottom-left-shape',
+] as const
+
+/**
+ * Map a computed `corner-shape` value to the beam geometry.
+ *
+ * Chrome serialises the computed `squircle` keyword as `superellipse(2)`, so
+ * both spellings mean squircle. Only the first value counts when the
+ * shorthand lists one shape per corner. Any other shape renders as round;
+ * an empty value (no `corner-shape` support) is unknown.
+ */
+export function parseCornerShape(raw: string): BorderBeamCornerShape | null {
+  const value = raw.trim().toLowerCase()
+  if (!value) return null
+
+  const first = value.match(/^(?:superellipse\(\s*[^)]*\)|[a-z-]+)/)?.[0] ?? value
+  if (first === 'squircle') return 'squircle'
+
+  const superellipse = first.match(/^superellipse\(\s*([+-]?(?:\d+\.?\d*|\.\d+))\s*\)$/)
+  if (superellipse && Math.abs(Number(superellipse[1]) - 2) < 1e-6) return 'squircle'
+
+  return 'round'
+}
+
 /**
  * Mirror of useDetectedBorderRadius for the CSS `corner-shape` property:
  * reads the first slotted element's computed corner shape so squircle
@@ -20,12 +51,13 @@ export function useDetectedCornerShape(
     const child = elementRef.value?.firstElementChild
     if (!(child instanceof HTMLElement)) return
 
-    const raw = getComputedStyle(child).getPropertyValue('corner-shape').trim()
-    if (raw.includes('squircle')) {
-      detectedShape.value = 'squircle'
-    } else if (raw) {
-      detectedShape.value = 'round'
+    const style = getComputedStyle(child)
+    let shape = parseCornerShape(style.getPropertyValue('corner-shape'))
+    for (const longhand of CORNER_LONGHANDS) {
+      if (shape) break
+      shape = parseCornerShape(style.getPropertyValue(longhand))
     }
+    if (shape) detectedShape.value = shape
   }
 
   const observe = async () => {

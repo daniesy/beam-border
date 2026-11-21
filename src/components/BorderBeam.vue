@@ -7,7 +7,6 @@ import { useBeamStylesheet } from '../composables/useBeamStylesheet'
 import { useDetectedBorderRadius } from '../composables/useDetectedBorderRadius'
 import { useDetectedCornerShape } from '../composables/useDetectedCornerShape'
 import { useElementVisibility } from '../composables/useElementVisibility'
-import { usePulseDriver } from '../composables/usePulseDriver'
 import { usePulseGlowScale } from '../composables/usePulseGlowScale'
 import { useSystemTheme } from '../composables/useSystemTheme'
 import type { BorderBeamProps } from '../types'
@@ -51,6 +50,7 @@ const beamStyles = useBeamStyles({
   pulseGlowScale,
 })
 const beamKey = beamStyles.cssKey
+const pulseLayers = beamStyles.pulseLayers
 
 useBeamStylesheet(beamStyles.cssKey, beamStyles.cssStyles)
 
@@ -60,8 +60,6 @@ const { isActive, isFading, handleAnimationEnd } = useBeamActivity({
   onDeactivate: () => emit('deactivate'),
   onAnimationEnd: (event) => emit('animationend', event),
 })
-
-usePulseDriver(wrapperRef, beamStyles.driverConfig, isActive, isFading, isVisible)
 
 const forwardedAttrs = computed(() => {
   const { class: _class, style: _style, ...rest } = attrs
@@ -84,6 +82,17 @@ const mergedStyle = computed<StyleValue>(() => [attrs.style as StyleValue, beamS
     @animationend="handleAnimationEnd"
   >
     <slot />
-    <div data-beam-bloom />
+    <!-- Pulse variants: one static blob per breathing gradient; the motion is
+         CSS opacity/transform/filter animation run by the compositor. -->
+    <template v-if="pulseLayers">
+      <div v-for="layer in pulseLayers" :key="layer.name" :data-beam-layer="layer.name" aria-hidden="true">
+        <div data-beam-paint>
+          <div v-for="n in layer.blobs" :key="n" :data-beam-blob="n - 1"><div /></div>
+        </div>
+      </div>
+    </template>
+    <div data-beam-bloom>
+      <div v-if="pulseLayers" data-beam-paint />
+    </div>
   </div>
 </template>
